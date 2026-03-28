@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AgriChain — Smart Farm Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --green-dark: #1a3a2a;
+    --green-mid: #2d6a4f;
+    --green-light: #52b788;
+    --green-pale: #b7e4c7;
+    --amber: #f4a261;
+    --amber-dark: #e76f51;
+    --cream: #f8f5ef;
+    --white: #ffffff;
+    --text-dark: #1a1a1a;
+    --text-muted: #6b7280;
+    --card-bg: #ffffff;
+    --border: #e5e7eb;
+    --sidebar-w: 240px;
+    --header-h: 64px;
+    --radius: 14px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 40px rgba(0,0,0,0.13);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text-dark);
+    min-height: 100vh;
+  }
+
+  h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
+
+  /* ── ROLE SELECTOR SCREEN ── */
+  #role-screen {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a3a2a 0%, #2d6a4f 50%, #1a3a2a 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  #role-screen .logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.6rem;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -1px;
+    margin-bottom: 6px;
+  }
+  #role-screen .logo span { color: var(--amber); }
+  #role-screen .tagline {
+    color: var(--green-pale);
+    font-size: 1rem;
+    margin-bottom: 50px;
+    letter-spacing: 0.5px;
+  }
+  .role-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    max-width: 1000px;
+    width: 100%;
+  }
+  .role-card {
+    background: rgba(255,255,255,0.07);
+    border: 1.5px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    padding: 32px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(8px);
+  }
+  .role-card:hover {
+    background: rgba(255,255,255,0.15);
+    border-color: var(--amber);
+    transform: translateY(-6px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+  }
+  .role-card .icon {
+    font-size: 2.8rem;
+    margin-bottom: 14px;
+    display: block;
+  }
+  .role-card .role-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+  .role-card .role-desc {
+    font-size: 0.8rem;
+    color: var(--green-pale);
+    line-height: 1.5;
+  }
+
+  /* ── MAIN APP LAYOUT ── */
+  #app { display: none; min-height: 100vh; }
+  #app.active { display: flex; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: var(--sidebar-w);
+    min-height: 100vh;
+    background: var(--green-dark);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0;
+    z-index: 100;
+    overflow-y: auto;
+  }
+  .sidebar-logo {
+    padding: 22px 20px 16px;
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #fff;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    letter-spacing: -0.5px;
+  }
+  .sidebar-logo span { color: var(--amber); }
+  .sidebar-role-badge {
+    padding: 12px 20px;
+    background: rgba(255,255,255,0.07);
+    margin: 12px;
+    border-radius: 10px;
+    font-size: 0.78rem;
+    color: var(--green-pale);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .sidebar-role-badge strong {
+    display: block;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.88rem;
+    color: #fff;
+    margin-bottom: 2px;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .nav-section {
+    padding: 8px 12px 4px;
+    font-size: 0.68rem;
+    color: rgba(255,255,255,0.35);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-top: 8px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 11px 16px;
+    margin: 2px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: rgba(255,255,255,0.7);
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .nav-item.active { background: var(--green-light); color: #fff; }
+  .nav-item .nav-icon { font-size: 1.1rem; width: 22px; text-align: center; }
+  .sidebar-bottom {
+    margin-top: auto;
+    padding: 16px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .switch-role-btn {
+    width: 100%;
+    padding: 10px;
+    background: rgba(244,162,97,0.15);
+    border: 1px solid rgba(244,162,97,0.3);
+    border-radius: 10px;
+    color: var(--amber);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .switch-role-btn:hover { background: rgba(244,162,97,0.25); }
+
+  /* MAIN CONTENT */
+  .main-content {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    min-height: 100vh;
+  }
+  .topbar {
+    height: var(--header-h);
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .topbar-title { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 700; }
+  .topbar-right { display: flex; align-items: center; gap: 16px; }
+  .topbar-pill {
+    background: #f0fdf4;
+    color: var(--green-mid);
+    border: 1px solid var(--green-pale);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+  .notif-btn {
+    width: 36px; height: 36px;
+    background: #f9fafb;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 1rem;
+    position: relative;
+  }
+  .notif-dot {
+    position: absolute; top: 4px; right: 4px;
+    width: 8px; height: 8px;
+    background: var(--amber-dark);
+    border-radius: 50%;
+    border: 2px solid #fff;
+  }
+  .avatar {
+    width: 36px; height: 36px;
+    background: var(--green-mid);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .page-body { padding: 32px; display: none; }
+  .page-body.active { display: block; }
+
+  /* ── CARDS ── */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+  .stat-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 22px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    transition: transform 0.2s;
+  }
+  .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+  .stat-label { font-size: 0.78rem; color: var(--text-muted); font-weight: 500; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-value { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; color: var(--text-dark); }
+  .stat-sub { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; }
+  .stat-badge { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; }
+  .badge-green { background: #dcfce7; color: #16a34a; }
+  .badge-amber { background: #fef3c7; color: #d97706; }
+  .badge-red { background: #fee2e2; color: #dc2626; }
+  .badge-blue { background: #dbeafe; color: #2563eb; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .section-header h3 { font-size: 1.1rem; font-weight: 700; }
+  .btn {
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+  .btn-primary { background: var(--green-mid); color: #fff; }
+  .btn-primary:hover { background: var(--green-dark); }
+  .btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text-dark); }
+  .btn-outline:hover { border-color: var(--green-mid); color: var(--green-mid); }
+  .btn-amber { background: var(--amber); color: #fff; }
+  .btn-amber:hover { background: var(--amber-dark); }
+  .btn-sm { padding: 5px 12px; font-size: 0.78rem; }
+
+  .card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+  thead th {
+    background: #f9fafb;
+    padding: 11px 16px;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody td { padding: 13px 16px; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: #f9fafb; }
+
+  /* PROGRESS BAR */
+  .prog-bar { height: 8px; background: #f3f4f6; border-radius: 10px; overflow: hidden; margin-top: 6px; }
+  .prog-fill { height: 100%; border-radius: 10px; background: var(--green-light); transition: width 0.6s ease; }
+  .prog-fill.amber { background: var(--amber); }
+  .prog-fill.red { background: var(--amber-dark); }
+
+  /* GRID LAYOUTS */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+  .two-thirds { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+
+  /* FORM */
+  .form-group { margin-bottom: 18px; }
+  .form-group label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 6px; color: var(--text-dark); }
+  .form-control {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.2s;
+    background: #fff;
+  }
+  .form-control:focus { border-color: var(--green-mid); }
+  select.form-control { cursor: pointer; }
+
+  /* ALERT */
+  .alert {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    margin-bottom: 14px;
+    font-size: 0.875rem;
+  }
+  .alert-warning { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+  .alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+  .alert-danger { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+  .alert-info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+
+  /* TIMELINE */
+  .timeline { position: relative; padding-left: 28px; }
+  .timeline::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+  .tl-item { position: relative; margin-bottom: 22px; }
+  .tl-dot {
+    position: absolute; left: -24px; top: 2px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--green-light);
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 3px var(--green-pale);
+  }
+  .tl-dot.amber { background: var(--amber); box-shadow: 0 0 0 3px #fef3c7; }
+  .tl-dot.red { background: var(--amber-dark); box-shadow: 0 0 0 3px #fee2e2; }
+  .tl-title { font-weight: 600; font-size: 0.875rem; }
+  .tl-meta { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+
+  /* SENSOR GAUGE */
+  .gauge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 16px; }
+  .gauge-card {
+    background: #f9fafb;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 14px;
+    text-align: center;
+  }
+  .gauge-icon { font-size: 1.8rem; margin-bottom: 8px; }
+  .gauge-value { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; }
+  .gauge-label { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .gauge-status { margin-top: 8px; }
+
+  /* QR CODE MOCK */
+  .qr-mock {
+    width: 100px; height: 100px;
+    background: repeating-linear-gradient(0deg, #1a1a1a 0, #1a1a1a 8px, transparent 8px, transparent 16px),
+                repeating-linear-gradient(90deg, #1a1a1a 0, #1a1a1a 8px, transparent 8px, transparent 16px);
+    background-color: #fff;
+    border: 3px solid #1a1a1a;
+    border-radius: 6px;
+  }
+
+  /* MAP MOCK */
+  .map-mock {
+    height: 220px;
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 50%, #b1dfbb 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    font-size: 0.85rem;
+    color: var(--green-dark);
+    font-weight: 600;
+  }
+  .map-mock .pin {
+    position: absolute;
+    font-size: 1.5rem;
+    animation: bounce 1.5s infinite;
+  }
+  @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+  /* CHART MOCK */
+  .bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 120px;
+    padding: 0 4px;
+  }
+  .bar-chart .bar {
+    flex: 1;
+    background: linear-gradient(to top, var(--green-mid), var(--green-light));
+    border-radius: 5px 5px 0 0;
+    position: relative;
+    transition: opacity 0.2s;
+  }
+  .bar-chart .bar:hover { opacity: 0.8; }
+  .bar-chart .bar.amber { background: linear-gradient(to top, var(--amber-dark), var(--amber)); }
+  .chart-labels { display: flex; gap: 8px; padding: 0 4px; margin-top: 6px; }
+  .chart-labels span { flex: 1; text-align: center; font-size: 0.68rem; color: var(--text-muted); }
+
+  /* DONUT MOCK */
+  .donut-wrap { display: flex; align-items: center; gap: 20px; }
+  .donut-svg { flex-shrink: 0; }
+  .donut-legend { display: flex; flex-direction: column; gap: 8px; font-size: 0.8rem; }
+  .donut-legend-item { display: flex; align-items: center; gap: 8px; }
+  .donut-legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* NOTIFICATION PANEL */
+  .notif-item { display: flex; align-items: flex-start; gap: 12px; padding: 14px 0; border-bottom: 1px solid #f3f4f6; }
+  .notif-item:last-child { border-bottom: none; }
+  .notif-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+  .notif-icon.green { background: #dcfce7; }
+  .notif-icon.amber { background: #fef3c7; }
+  .notif-icon.red { background: #fee2e2; }
+  .notif-text { font-size: 0.85rem; font-weight: 500; }
+  .notif-time { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+
+  /* PAGE HEADER */
+  .page-header {
+    margin-bottom: 28px;
+  }
+  .page-header h2 { font-size: 1.6rem; font-weight: 800; margin-bottom: 4px; }
+  .page-header p { color: var(--text-muted); font-size: 0.9rem; }
+
+  /* MOBILE FRAME MOCK */
+  .mobile-frame {
+    width: 280px;
+    border: 8px solid #1a1a1a;
+    border-radius: 36px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    background: #fff;
+    margin: 0 auto;
+  }
+  .mobile-screen { padding: 20px 16px; }
+  .mobile-header {
+    background: var(--green-dark);
+    color: #fff;
+    padding: 16px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .two-col, .three-col, .two-thirds { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 700px) {
+    .sidebar { display: none; }
+    .main-content { margin-left: 0; }
+  }
+
+  /* FADE ANIMATION */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .page-body.active { animation: fadeUp 0.3s ease; }
+
+  /* ROLE SCREEN ANIMATION */
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  #role-screen { animation: fadeIn 0.5s ease; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     ROLE SELECTOR SCREEN
+═══════════════════════════════════════════════════════════ -->
+<div id="role-screen">
+  <div class="logo">Agri<span>Chain</span></div>
+  <div class="tagline">Smart Farm-to-Warehouse Management System</div>
+  <div class="role-grid">
+    <div class="role-card" onclick="enterRole('farmer')">
+      <span class="icon">🌾</span>
+      <div class="role-name">Farmer</div>
+      <div class="role-desc">Sowing logs, harvest tracking, IoT sensor data & crop predictions</div>
+    </div>
+    <div class="role-card" onclick="enterRole('warehouse')">
+      <span class="icon">🏭</span>
+      <div class="role-name">Warehouse Manager</div>
+      <div class="role-desc">Real-time inventory, stock visibility & incoming shipments</div>
+    </div>
+    <div class="role-card" onclick="enterRole('processing')">
+      <span class="icon">⚙️</span>
+      <div class="role-name">Processing Unit</div>
+      <div class="role-desc">RFID auto-tracking, batch management & quality control</div>
+    </div>
+    <div class="role-card" onclick="enterRole('supplier')">
+      <span class="icon">🚚</span>
+      <div class="role-name">Supplier Portal</div>
+      <div class="role-desc">Auto-orders, stock levels, delivery ETA & purchase orders</div>
+    </div>
+    <div class="role-card" onclick="enterRole('admin')">
+      <span class="icon">📊</span>
+      <div class="role-name">Admin / Analytics</div>
+      <div class="role-desc">Predictive analytics, custom dashboards & system alerts</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MAIN APP
+═══════════════════════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">Agri<span>Chain</span></div>
+    <div class="sidebar-role-badge">
+      <strong id="sidebar-role-name">Farmer</strong>
+      Logged in as <span id="sidebar-role-user">John Doe</span>
+    </div>
+
+    <!-- Nav items injected by JS -->
+    <div id="sidebar-nav"></div>
+
+    <div class="sidebar-bottom">
+      <button class="switch-role-btn" onclick="switchRole()">⇄ Switch Role</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-right">
+        <div class="topbar-pill" id="topbar-pill">● System Online</div>
+        <div class="notif-btn">🔔<div class="notif-dot"></div></div>
+        <div class="avatar" id="topbar-avatar">JD</div>
+      </div>
+    </div>
+
+    <!-- ── FARMER PAGES ── -->
+    <div id="pages-farmer">
+      <div class="page-body" id="farmer-dashboard">
+        <div class="page-header">
+          <h2>Farmer Dashboard</h2>
+          <p>Overview of your farm, sensors and crop cycle — Season 2024/25</p>
+        </div>
+        <div class="alert alert-success">✅ <div><strong>IoT Sensors Active</strong> — All 12 field sensors are reporting normally. Last sync: 2 min ago.</div></div>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Field Area</div>
+            <div class="stat-value">48.5 <span style="font-size:1rem">ha</span></div>
+            <div class="stat-sub">4 active plots</div>
+            <span class="stat-badge badge-green">Healthy</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Crop Planted</div>
+            <div class="stat-value">3</div>
+            <div class="stat-sub">Paddy · Maize · Soybean</div>
+            <span class="stat-badge badge-amber">In Progress</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Days to Harvest</div>
+            <div class="stat-value">42</div>
+            <div class="stat-sub">Paddy — Plot A1</div>
+            <span class="stat-badge badge-blue">On Track</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Yield Prediction</div>
+            <div class="stat-value">6.2 <span style="font-size:1rem">t</span></div>
+            <div class="stat-sub">±0.3t estimated range</div>
+            <span class="stat-badge badge-green">+8% vs last</span>
+          </div>
+        </div>
+
+        <div class="two-thirds">
+          <div class="card">
+            <div class="section-header"><h3>📡 Live Sensor Readings</h3> <span class="stat-badge badge-green">Live</span></div>
+            <div class="gauge-grid">
+              <div class="gauge-card">
+                <div class="gauge-icon">🌡️</div>
+                <div class="gauge-value" style="color:#e76f51">28°C</div>
+                <div class="gauge-label">Temperature</div>
+                <div class="gauge-status"><span class="stat-badge badge-amber">Warm</span></div>
+              </div>
+              <div class="gauge-card">
+                <div class="gauge-icon">💧</div>
+                <div class="gauge-value" style="color:#2563eb">72%</div>
+                <div class="gauge-label">Humidity</div>
+                <div class="gauge-status"><span class="stat-badge badge-green">Optimal</span></div>
+              </div>
+              <div class="gauge-card">
+                <div class="gauge-icon">🌱</div>
+                <div class="gauge-value" style="color:#16a34a">68%</div>
+                <div class="gauge-label">Soil Moisture</div>
+                <div class="gauge-status"><span class="stat-badge badge-green">Good</span></div>
+              </div>
+              <div class="gauge-card">
+                <div class="gauge-icon">☀️</div>
+                <div class="gauge-value" style="color:#d97706">5.2</div>
+                <div class="gauge-label">Light (klux)</div>
+                <div class="gauge-status"><span class="stat-badge badge-amber">Moderate</span></div>
+              </div>
+              <div class="gauge-card">
+                <div class="gauge-icon">🌬️</div>
+                <div class="gauge-value" style="color:#6b7280">12km/h</div>
+                <div class="gauge-label">Wind Speed</div>
+                <div class="gauge-status"><span class="stat-badge badge-green">Low</span></div>
+              </div>
+              <div class="gauge-card">
+                <div class="gauge-icon">🧪</div>
+                <div class="gauge-value" style="color:#7c3aed">6.4</div>
+                <div class="gauge-label">Soil pH</div>
+                <div class="gauge-status"><span class="stat-badge badge-green">Normal</span></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="section-header"><h3>🔔 Alerts</h3></div>
+              <div class="notif-item">
+                <div class="notif-icon amber">⚠️</div>
+                <div><div class="notif-text">Low fertiliser stock detected</div><div class="notif-time">35 min ago</div></div>
+              </div>
+              <div class="notif-item">
+                <div class="notif-icon green">✅</div>
+                <div><div class="notif-text">Irrigation cycle completed — Plot B2</div><div class="notif-time">2 hrs ago</div></div>
+              </div>
+              <div class="notif-item">
+                <div class="notif-icon red">🌧️</div>
+                <div><div class="notif-text">Rain forecast in 3 days — adjust schedule</div><div class="notif-time">Today 8:00 AM</div></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="section-header"><h3>🗺️ Field Map</h3></div>
+              <div class="map-mock">
+                <span class="pin" style="top:30%;left:25%">📍</span>
+                <span class="pin" style="top:55%;left:60%;animation-delay:0.5s">📍</span>
+                <span>Field Overview — 4 Plots</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-body" id="farmer-sowing">
+        <div class="page-header"><h2>Sowing Log</h2><p>Record and track planting activities for each plot</p></div>
+        <div class="two-col">
+          <div class="card">
+            <div class="section-header"><h3>➕ New Sowing Record</h3></div>
+            <div class="form-group"><label>Plot / Field ID</label><select class="form-control"><option>Plot A1 — Paddy Field</option><option>Plot B2 — Maize Field</option><option>Plot C3 — Soybean Field</option></select></div>
+            <div class="form-group"><label>Crop Type</label><select class="form-control"><option>Paddy (Rice)</option><option>Maize</option><option>Soybean</option><option>Wheat</option></select></div>
+            <div class="two-col" style="gap:12px">
+              <div class="form-group"><label>Sowing Date</label><input type="date" class="form-control" value="2025-01-15"/></div>
+              <div class="form-group"><label>Seed Qty (kg)</label><input type="number" class="form-control" value="120"/></div>
+            </div>
+            <div class="form-group"><label>Seed Variety</label><input type="text" class="form-control" value="MR219 Elite"/></div>
+            <div class="form-group"><label>Fertiliser Applied</label><input type="text" class="form-control" value="NPK 15-15-15, 50kg/ha"/></div>
+            <div class="form-group"><label>Notes</label><textarea class="form-control" rows="3" placeholder="Additional notes...">Good soil moisture. Applied pre-emergent herbicide.</textarea></div>
+            <button class="btn btn-primary" style="width:100%">💾 Save Sowing Record</button>
+          </div>
+          <div class="card">
+            <div class="section-header"><h3>📋 Recent Sowing Records</h3></div>
+            <table>
+              <thead><tr><th>Plot</th><th>Crop</th><th>Date</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>A1</td><td>Paddy</td><td>Jan 15</td><td><span class="stat-badge badge-green">Growing</span></td></tr>
+                <tr><td>B2</td><td>Maize</td><td>Jan 20</td><td><span class="stat-badge badge-green">Growing</span></td></tr>
+                <tr><td>C3</td><td>Soybean</td><td>Feb 2</td><td><span class="stat-badge badge-amber">Germinating</span></td></tr>
+                <tr><td>D4</td><td>Wheat</td><td>Dec 10</td><td><span class="stat-badge badge-blue">Harvested</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-body" id="farmer-harvest">
+        <div class="page-header"><h2>Harvest Tracking</h2><p>Log harvest quantities and generate QR/Barcode for traceability</p></div>
+        <div class="two-col">
+          <div>
+            <div class="card">
+              <div class="section-header"><h3>🌾 Log New Harvest</h3></div>
+              <div class="form-group"><label>Plot</label><select class="form-control"><option>Plot A1 — Paddy</option><option>Plot B2 — Maize</option></select></div>
+              <div class="two-col" style="gap:12px">
+                <div class="form-group"><label>Harvest Date</label><input type="date" class="form-control" value="2025-03-10"/></div>
+                <div class="form-group"><label>Quantity (tonnes)</label><input type="number" class="form-control" value="5.8"/></div>
+              </div>
+              <div class="form-group"><label>Quality Grade</label><select class="form-control"><option>Grade A (Premium)</option><option>Grade B (Standard)</option><option>Grade C (Commercial)</option></select></div>
+              <div class="form-group"><label>Destination Warehouse</label><select class="form-control"><option>Warehouse Central — KL</option><option>Warehouse North — Kedah</option></select></div>
+              <button class="btn btn-primary" style="margin-right:10px">💾 Save & Generate QR</button>
+              <button class="btn btn-outline">📄 Print Label</button>
+            </div>
+            <div class="card">
+              <div class="section-header"><h3>📦 Harvest Summary</h3></div>
+              <div class="bar-chart">
+                <div class="bar" style="height:60%"></div>
+                <div class="bar" style="height:80%"></div>
+                <div class="bar" style="height:45%"></div>
+                <div class="bar amber" style="height:70%"></div>
+                <div class="bar" style="height:90%"></div>
+                <div class="bar" style="height:55%"></div>
+              </div>
+              <div class="chart-labels"><span>Oct</span><span>Nov</span><span>Dec</span><span>Jan</span><span>Feb</span><span>Mar</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="section-header"><h3>🏷️ Batch Labels & QR</h3></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 0">
+              <div class="qr-mock"></div>
+              <div style="text-align:center">
+                <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem">BATCH #2025-A1-0312</div>
+                <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px">Plot A1 · Paddy MR219 · 5.8T</div>
+                <div style="font-size:0.8rem;color:var(--text-muted)">Harvested: 10 Mar 2025</div>
+                <div style="font-size:0.8rem;color:var(--text-muted)">Dest: Warehouse Central KL</div>
+              </div>
+              <button class="btn btn-primary">📲 Download QR</button>
+              <button class="btn btn-outline">🖨️ Print Label</button>
+            </div>
+            <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:8px">
+              <div class="section-header"><h3>Recent Batches</h3></div>
+              <table>
+                <thead><tr><th>Batch ID</th><th>Crop</th><th>Qty</th><th>Status</th></tr></thead>
+                <tbody>
+                  <tr><td>A1-0312</td><td>Paddy</td><td>5.8t</td><td><span class="stat-badge badge-green">Delivered</span></td></tr>
+                  <tr><td>B2-0218</td><td>Maize</td><td>3.2t</td><td><span class="stat-badge badge-amber">In Transit</span></td></tr>
+                  <tr><td>A1-1205</td><td>Paddy</td><td>6.1t</td><td><span class="stat-badge badge-blue">Archived</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-body" id="farmer-predictions">
+        <div class="page-header"><h2>Crop Predictions</h2><p>AI-powered yield and growth predictions based on sensor data</p></div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-label">Predicted Yield — Plot A1</div><div class="stat-value">6.2t</div><div class="stat-sub">Paddy · Harvest in 42 days</div><span class="stat-badge badge-green">+8%</span></div>
+          <div class="stat-card"><div class="stat-label">Predicted Yield — Plot B2</div><div class="stat-value">3.8t</div><div class="stat-sub">Maize · Harvest in 65 days</div><span class="stat-badge badge-green">+5%</span></div>
+          <div class="stat-card"><div class="stat-label">Disease Risk</div><div class="stat-value">Low</div><div class="stat-sub">Based on humidity & temp</div><span class="stat-badge badge-green">Safe</span></div>
+          <div class="stat-card"><div class="stat-label">Irrigation Need</div><div class="stat-value">Moderate</div><div class="stat-sub">Next: in 3 days</div><span class="stat-badge badge-amber">Plan</span></div>
+        </div>
+        <div class="two-col">
+          <div class="card">
+            <div class="section-header"><h3>📈 Yield Trend</h3></div>
+            <div class="bar-chart" style="height:160px">
+              <div class="bar" style="height:55%"></div>
+              <div class="bar" style="height:65%"></div>
+              <div class="bar" style="height:72%"></div>
+              <div class="bar" style="height:68%"></div>
+              <div class="bar" style="height:80%"></div>
+              <div class="bar" style="height:85%"></div>
+              <div class="bar amber" style="height:90%;opacity:0.6;border:2px dashed var(--amber)"></div>
+            </div>
+            <div class="chart-labels"><span>S1'23</span><span>S2'23</span><span>S1'24</span><span>S2'24</span><span>S1'25</span><span>S2'25</span><span>Pred</span></div>
+            <p style="font-size:0.78rem;color:var(--text-muted);margin-top:12px">📊 Dashed bar = AI prediction for upcoming season</p>
+          </div>
+          <div class="card">
+            <div class="section-header"><h3>🌿 Growth Stage</h3></div>
+            <div class="timeline">
+              <div class="tl-item"><div class="tl-dot"></div><div class="tl-title">Seed Germination ✅</div><div class="tl-meta">Jan 15 – Jan 22 · Complete</div></div>
+              <div class="tl-item"><div class="tl-dot"></div><div class="tl-title">Vegetative Stage ✅</div><div class="tl-meta">Jan 22 – Feb 20 · Complete</div></div>
+              <div class="tl-item"><div class="tl-dot amber"></div><div class="tl-title">Flowering Stage 🌸</div><div class="tl-meta">Feb 20 – Mar 10 · In Progress</div></div>
+              <div class="tl-item"><div class="tl-dot red"></div><div class="tl-title">Grain Filling</div><div class="tl-meta">Mar 10 – Mar 28 · Upcoming</div></div>
+              <div class="tl-item"><div class="tl-dot red"></div><div class="tl-title">Harvest Ready 🌾</div><div class="tl-meta">~Apr 1 · Predicted</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── WAREHOUSE MANAGER PAGES ── -->
+    <div id="pages-warehouse">
+      <div class="page-body" id="warehouse-dashboard">
+        <div class="page-header"><h2>Warehouse Dashboard</h2><p>Real-time stock visibility and incoming shipments overview</p></div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-label">Total Stock</div><div class="stat-value">284t</div><div class="stat-sub">Across all categories</div><span class="stat-badge badge-green">84% capacity</span></div>
+          <div class="stat-card"><div class="stat-label">Incoming Today</div><div class="stat-value">12</div><div class="stat-sub">Shipments expected</div><span class="stat-badge badge-blue">Scheduled</span></div>
+          <div class="stat-card"><div class="stat-label">Low Stock Items</div><div class="stat-value">3</div><div class="stat-sub">Below reorder level</div><span class="stat-badge badge-red">Action Needed</span></div>
+          <div class="stat-card"><div class="stat-label">Storage Temp</div><div class="stat-value">18°C</div><div class="stat-sub">All zones nominal</div><span class="stat-badge badge-green">Optimal</span></div>
+        </div>
+        <div class="two-thirds">
+          <div class="card">
+            <div class="section-header"><h3>📦 Inventory Levels</h3> <button class="btn btn-primary btn-sm">+ Add Stock</button></div>
+            <table>
+              <thead><tr><th>Product</th><th>Stock</th><th>Capacity</th><th>Fill %</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><strong>Paddy (Rice)</strong></td><td>120t</td><td>150t</td>
+                  <td><div class="prog-bar"><div class="prog-fill" style="width:80%"></div></div></td>
+                  <td><span class="stat-badge badge-green">Good</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Maize</strong></td><td>48t</td><td>80t</td>
+                  <td><div class="prog-bar"><div class="prog-fill" style="width:60%"></div></div></td>
+                  <td><span class="stat-badge badge-green">Good</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Soybean</strong></td><td>12t</td><td>60t</td>
+                  <td><div class="prog-bar"><div class="prog-fill amber" style="width:20%"></div></div></td>
+                  <td><span class="stat-badge badge-amber">Low</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Wheat</strong></td><td>8t</td><td>100t</td>
+                  <td><div class="prog-bar"><div class="prog-fill red" style="width:8%"></div></div></td>
+                  <td><span class="stat-badge badge-red">Critical</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Fertiliser (NPK)</strong></td><td>4.2t</td><td>20t</td>
+                  <td><div class="prog-bar"><div class="prog-fill amber" style="width:21%"></div></div></td>
+                  <td><span class="stat-badge badge-amber">Reorder</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <div class="card">
+              <div class="section-header"><h3>🌡️ Storage Sensors</h3></div>
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div><div style="display:flex;justify-content:space-between;font-size:0.85rem"><span>Zone A — Cold Storage</span><strong>15°C</strong></div><div class="prog-bar"><div class="prog-fill" style="width:52%"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:0.85rem"><span>Zone B — Dry Storage</span><strong>22°C</strong></div><div class="prog-bar"><div class="prog-fill amber" style="width:73%"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:0.85rem"><span>Humidity — Zone A</span><strong>65%</strong></div><div class="prog-bar"><div class="prog-fill" style="width:65%"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:0.85rem"><span>Humidity — Zone B</span><strong>58%</strong></div><div class="prog-bar"><div class="prog-fill" style="width:58%"></div></div></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="section-header"><h3>📬 Incoming Shipments</h3></div>
+              <div class="timeline">
+                <div class="tl-item"><div class="tl-dot"></div><div class="tl-title">Paddy — 18t from Plot A1</div><div class="tl-meta">ETA: 2:30 PM today</div></div>
+                <div class="tl-item"><div class="tl-dot amber"></div><div class="tl-title">Maize — 6t from Farm B</div><div class="tl-meta">ETA: Tomorrow 9 AM</div></div>
+                <div class="tl-item"><div class="tl-dot red"></div><div class="tl-title">Wheat — 22t from Farm D</div><div class="tl-meta">ETA: 28 Mar · Delayed</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-body" id="warehouse-inventory">
+        <div class="page-header"><h2>Inventory Management</h2><p>Manage stock, record movements and update quantities</p></div>
+        <div class="card">
+          <div class="section-header"><h3>📋 Full Inventory Register</h3>
+            <div style="display:flex;gap:10px">
+              <input class="form-control" placeholder="Search product..." style="width:200px"/>
+              <button class="btn btn-primary">+ Add Item</button>
+            </div>
+          </div>
+          <table>
+            <thead><tr><th>SKU</th><th>Product</th><th>Category</th><th>Qty (t)</th><th>Location</th><th>Expiry</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td>WH-001</td><td>Paddy Grade A</td><td>Grain</td><td>120</td><td>Zone A, Bay 3</td><td>Jun 2025</td><td><span class="stat-badge badge-green">Good</span></td><td><button class="btn btn-outline btn-sm">Edit</button></td></tr>
+              <tr><td>WH-002</td><td>Maize Premium</td><td>Grain</td><td>48</td><td>Zone B, Bay 1</td><td>May 2025</td><td><span class="stat-badge badge-green">Good</span></td><td><button class="btn btn-outline btn-sm">Edit</button></td></tr>
+              <tr><td>WH-003</td><td>Soybean Organic</td><td>Legume</td><td>12</td><td>Zone A, Bay 5</td><td>Apr 2025</td><td><span class="stat-badge badge-amber">Low</span></td><td><button class="btn btn-amber btn-sm">Reorder</button></td></tr>
+              <tr><td>WH-004</td><td>Wheat (Standard)</td><td>Grain</td><td>8</td><td>Zone B, Bay 4</td><td>Jul 2025</td><td><span class="stat-badge badge-red">Critical</span></td><td><button class="btn btn-amber btn-sm">Reorder</button></td></tr>
+              <tr><td>WH-005</td><td>NPK Fertiliser</td><td>Input</td><td>4.2</td><td>Zone C, Bay 2</td><td>Dec 2025</td><td><span class="stat-badge badge-amber">Low</span></td><td><button class="btn btn-amber btn-sm">Reorder</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="page-body" id="warehouse-analytics">
+        <div class="page-header"><h2>Warehouse Analytics</h2><p>Throughput, turnover rates and stock movement trends</p></div>
+        <div class="two-col">
+          <div class="card">
+            <div class="section-header"><h3>📊 Monthly Throughput (tonnes)</h3></div>
+            <div class="bar-chart" style="height:150px">
+              <div class="bar" style="height:60%"></div>
+              <div class="bar" style="height:78%"></div>
+              <div class="bar" style="height:65%"></div>
+              <div class="bar" style="height:90%"></div>
+              <div class="bar" style="height:82%"></div>
+              <div class="bar amber" style="height:72%"></div>
+            </div>
+            <div class="chart-labels"><span>Oct</span><span>Nov</span><span>Dec</span><span>Jan</span><span>Feb</span><span>Mar</span></div>
+          </div>
+          <div class="card">
+            <div class="section-header"><h3>🥧 Stock by Category</h3></div>
+            <div class="donut-wrap">
+              <svg class="donut-svg" width="120" height="120" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="45" fill="none" stroke="#b7e4c7" stroke-width="22"/>
+                <circle cx="60" cy="60" r="45" fill="none" stroke="#2d6a4f" stroke-width="22" stroke-dasharray="127 156" stroke-dashoffset="40"/>
+                <circle cx="60" cy="60" r="45" fill="none" stroke="#f4a261" stroke-width="22" stroke-dasharray="50 233" stroke-dashoffset="-87"/>
+                <circle cx="60" cy="60" r="45" fill="none" stroke="#e76f51" stroke-width="22" stroke-dasharray="30 253" stroke-dashoffset="-137"/>
+                <text x="60" y="65" text-anchor="middle" font-family="Syne" font-size="16" font-weight="800" fill="#1a3a2a">284t</text>
+              </svg>
+              <div class="donut-legend">
+                <div class="donut-legend-item"><div class="donut-legend-dot" style="background:#2d6a4f"></div><span>Paddy — 42%</span></div>
+                <div class="donut-legend-item"><div class="donut-legend-dot" style="background:#b7e4c7"></div><span>Maize — 17%</span></div>
+                <div class="donut-legend-item"><div class="donut-legend-dot" style="background:#f4a261"></div><span>Soybean — 18%</span></div>
+                <div class="donut-legend-item"><div class="donut-legend-dot" style="background:#e76f51"></div><span>Wheat — 11%</span></div>
+                <div class="donut-legend-item"><div class="donut-legend-dot" style="background:#6b7280"></div><span>Others — 12%</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PROCESSING UNIT PAGES ── -->
+    <div id="pages-processing">
+      <div class="page-body" id="processing-dashboard">
+        <div class="page-header"><h2>Processing Unit Dashboard</h2><p>RFID auto-tracking, batch management and quality control</p></div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-label">Active Batches</div><div class="stat-value">8</div><div class="stat-sub">Currently in processing</div><span class="stat-badge badge-blue">Running</span></div>
+          <div class="stat-card"><div class="stat-label">RFID Tags Active</div><div class="stat-value">142</div><div class="stat-sub">Across all processing lines</div><span class="stat-badge badge-green">Online</span></div>
+          <div class="stat-card"><div class="stat-label">Processed Today</div><div class="stat-value">38.4t</div><div class="stat-sub">Target: 45t/day</div><span class="stat-badge badge-amber">85%</span></div>
+          <div class="stat-card"><div class="stat-label">Quality Pass Rate</div><div class="stat-value">96.2%</div><div class="stat-sub">QA checks today</div><span class="stat-badge badge-green">Excellent</span></div>
+        </div>
+        <div class="two-thirds">
+          <div class="card">
+            <div class="section-header"><h3>⚙️ Batch Processing Status</h3></div>
+            <table>
+              <thead><tr><th>Batch ID</th><th>Product</th><th>Line</th><th>Progress</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>BP-2025-001</td><td>Paddy → Rice (Milled)</td><td>Line 1</td>
+                  <td><div class="prog-bar"><div class="prog-fill" style="width:85%"></div></div></td>
+                  <td><span class="stat-badge badge-blue">Milling</span></td></tr>
+                <tr><td>BP-2025-002</td><td>Maize → Maize Flour</td><td>Line 2</td>
+                  <td><div class="prog-bar"><div class="prog-fill" style="width:40%"></div></div></td>
+                  <td><span class="stat-badge badge-amber">Drying</span></td></tr>
+                <tr><td>BP-2025-003</td><td>Soybean → Soy Oil</td><td>Line 3</td>
+                  <td><div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div></td>
+                  <td><span class="stat-badge badge-green">Complete</span></td></tr>
+                <tr><td>BP-2025-004</td><td>Wheat → Flour</td><td>Line 1</td>
+                  <td><div class="prog-bar"><div class="prog-fill red" style="width:15%"></div></div></td>
+                  <td><span class="stat-badge badge-red">Issue</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <div class="card">
+              <div class="section-header"><h3>📡 RFID Tracker</h3> <span class="stat-badge badge-green">Live</span></div>
+              <div class="timeline">
+                <div class="tl-item"><div class="tl-dot"></div><div class="tl-title">BP-001 — Entered Milling</div><div class="tl-meta">RFID: 0xA3F2 · 10:15 AM</div></div>
+                <div class="tl-item"><div class="tl-dot"></div><div class="tl-title">BP-003 — Packaging Complete</div><div class="tl-meta">RFID: 0xB8C1 · 11:30 AM</div></div>
+                <div class="tl-item"><div class="tl-dot amber"></div><div class="tl-title">BP-004 — QA Hold</div><div class="tl-meta">RFID: 0xD142 · 12:05 PM</div></div>
+                <div class="tl-item"><div class="tl-dot"></div><div class="tl-title">BP-002 — Dryer 60% Done</div><div class="tl-meta">RFID: 0xE9A7 · 12:40 PM</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-body" id="processing-batches">
+        <div class="page-header"><h2>Batch Management</h2><p>Create, manage and track processing batches end-to-end</p></div>
+        <div class="two-col">
+          <div class="card">
+            <div class="section-header"><h3>➕ Create New Batch</h3></div>
+            <div class="form-group"><label>Batch ID (Auto)</label><input class="form-control" value="BP-2025-009" readonly style="background:#f9fafb"/></div>
+            <div class="form-group"><label>Raw Material</label><select class="form-control"><option>Paddy (Rice)</option><option>Maize</option><option>Soybean</option></select></div>
+            <div class="form-group"><label>Processing Type</label><select class="form-control"><option>Milling</option><option>Drying</option><option>Pressing / Oil Extraction</option><option>Flour Grinding</option></select></div>
+            <div class="two-col" style="gap:12px">
+              <div class="form-group"><label>Input Qty (t)</label><input type="number" class="form-control" value="10"/></div>
+              <div class="form-group"><label>Processing Line</label><select class="form-control"><option>Line 1</option><option>Line 2</option><option>Line 3</option></select></div>
+            </div>
+            <div class="form-group"><label>Start Date/Time</label><input type="datetime-local" class="form-control"/></div>
+            <button class="btn btn-primary" style="width:100%">🚀 Start Batch</button>
+          </div>
+          <div class="card">
+            <div class="section-header"><h3>📋 All Batches</h3></div>
+            <table>
+              <thead><tr><th>Batch</th><th>Type</th><th>Input</th><th>Output</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>BP-001</td><td>Milling</td><td>12t</td><td>9.8t</td><td><span class="stat-badge badge-blue">Active</span></td></tr>
+                <tr><td>BP-002</td><td>Drying</td><td>8t</td><td>—</td><td><span class="stat-badge badge-amber">Drying</span></td></tr>
+                <tr><td>BP-003</td><td>Pressing</td><td>5t</td><td>1.8t oil</td><td><span class="stat-badge badge-green">Done</span></td></tr>
+                <tr><td>BP-004</td><td>Grinding</td><td>6t</td><td>—</td><td><span class="stat-badge badge-red">On Hold</span></td></tr>
+                <tr><td>BP-005</td><td>Milling</td><td>10t</td><td>8.2t</td><td><span class="stat-badge badge-green">Done</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-body" id="processing-qc">
+        <div class="page-header"><h2>Quality Control</h2><p>QA checks, grade assignments and reject tracking</p></div>
+        <div class="card">
+          <div class="section-header"><h3>🔬 QC Inspection Form</h3></div>
+          <div class="three-col">
+            <div class="form-group"><label>Batch ID</label><select class="form-control"><option>BP-2025-001</option><option>BP-2025-002</option></select></div>
+            <div class="form-group"><label>Inspector Name</label><input class="form-control" value="Azlan Bin Rahman"/></div>
+            <div class="form-group"><label>Inspection Date</label><input type="date" class="form-control"/></div>
+          </div>
+          <div class="three-col">
+            <div class="form-group"><label>Moisture Content (%)</label><input type="number" class="form-control" value="13.5"/></div>
+            <div class="form-group"><label>Foreign Matter (%)</label><input type="number" class="form-control" value="0.3"/></div>
+            <div class="form-group"><label>Grade Assignment</label><select class="form-control"><option>Grade A — Premium</option><option>Grade B — Standard</option><option>Reject</option></select></div>
+          </div>
+          <div class="form-group"><label>QC Notes</label><textarea class="form-control" rows="2">Sample passed moisture and foreign matter tests. Grade A approved.</textarea></div>
+          <button class="btn btn-primary">✅ Submit QC Report</button>
+        </div>
+        <div class="card">
+          <div class="section-header"><h3>📊 QC Summary</h3></div>
+          <div class="stat-grid" style="grid-template-columns:repeat(4,1fr)">
+            <div class="stat-card"><div class="stat-label">Batches Inspected</div><div class="stat-value">24</div><span class="stat-badge badge-blue">This Month</span></div>
+            <div class="stat-card"><div class="stat-label">Grade A Passed</div><div class="stat-value">18</div><span class="stat-badge badge-green">75%</span></div>
+            <div class="stat-card"><div class="stat-label">Grade B</div><div class="stat-value">5</div><span class="stat-badge badge-amber">21%</span></div>
+            <div class="stat-card"><div class="stat-label">Rejected</div><div class="stat-value">1</div><span class="stat-badge badge-red">4%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SUPPLIER PORTAL PAGES ── -->
+    <div id="pages-supplier">
+      <div class="page-body" id="supplier-dashboard">
+        <div class="page-header"><h2>Supplier Portal</h2><p>Manage purchase orders, deliveries and stock replenishment</p></div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-label">Open Orders</div><div class="stat-value">7</div><div class="stat-sub">Pending confirmation</div><span class="stat-badge badge-amber">Action Needed</span></div>
+          <div class="stat-card"><div class="stat-label">Deliveries Today</div><div class="stat-value">3</div><div class="stat-sub">Scheduled for today</div><span class="stat-badge badge-blue">On Track</span></div>
+          <div class="stat-card"><div class="stat-label">Auto-Orders Triggered</div><div class="stat-value">2</div><div class="stat-sub">Low stock auto-alerts</div><span class="stat-badge badge-red">Urgent</span></div>
+          <div class="stat-card"><div class="stat-label">Total Orders (Month)</div><div class="stat-value">RM 84,200</div><div class="stat-sub">28 orders processed</div><span class="stat-badge badge-green">+12%</span></div>
+        </div>
+        <div class="alert alert-warning">⚠️ <div><strong>Auto-Order Triggered:</strong> Wheat stock is critically low (8t remaining). System has auto-generated PO #PO-2025-087 for 50t. Awaiting your confirmation.</div></div>
+        <div class="two-col">
+          <div class="card">
+            <div class="section-header"><h3>📋 Purchase Orders</h3> <button class="btn btn-primary btn-sm">+ New PO</button></div>
+            <table>
+              <thead><tr><th>PO #</th><th>Item</th><th>Qty</th><th>Supplier</th><th>ETA</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>PO-085</td><td>NPK Fertiliser</td><td>10t</td><td>AgroSupply Sdn</td><td>Mar 30</td><td><span class="stat-badge badge-green">Confirmed</span></td></tr>
+                <tr><td>PO-086</td><td>Soybean Seeds</td><td>500kg</td><td>BioSeed Sdn</td><td>Apr 2</td><td><span class="stat-badge badge-blue">In Transit</span></td></tr>
+                <tr><td>PO-087</td><td>Wheat (Bulk)</td><td>50t</td><td>GrainCo Bhd</td><td>Apr 5</td><td><span class="stat-badge badge-amber">Pending</span></td></tr>
+                <tr><td>PO-088</td><td>Packaging (10kg bags)</td><td>2000 pcs</td><td>PackPro Sdn</td><td>Apr 1</td><td><span class="stat-badge badge-green">Confirmed</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card">
+            <div class="section-header"><h3>🚚 Delivery Tracker</h3></div>
+            <div class="timeline">
+              <div class="tl-item"><div class="tl-dot"></div><div class="tl-title">PO-085: NPK Fertiliser — Delivered ✅</div><div class="tl-meta">Mar 28 · 10:20 AM · Received by Ahmad</div></div>
+              <div class="tl-item"><div class="tl-dot amber"></div><div class="tl-title">PO-086: Soybean Seeds — In Transit 🚛</div><div class="tl-meta">ETA: Apr 2 · Driver: Razif · Truck: WRD 1234</div></div>
+              <div class="tl-item"><div class="tl-dot red"></div><div class="tl-title">PO-087: Wheat — Pending Approval</div><div class="tl-meta">Awaiting supplier confirmation</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-body" id="supplier-orders">
+        <div class="page-header"><h2>Order Management</h2><p>Create and manage purchase orders to suppliers</p></div>
+        <div class="two-col">
+          <div class="card">
+            <div class="section-header"><h3>➕ Create Purchase Order</h3></div>
+            <div class="form-group"><label>Supplier</label><select class="form-control"><option>AgroSupply Sdn Bhd</option><option>BioSeed Sdn Bhd</option><option>GrainCo Bhd</option><option>PackPro Sdn Bhd</option></select></div>
+            <div class="form-group"><label>Item / Product</label><select class="form-control"><option>NPK Fertiliser</option><option>Wheat Grain</option><option>Soybean Seeds</option><option>Packaging Materials</option></select></div>
+            <div class="two-col" style="gap:12px">
+              <div class="form-group"><label>Quantity</label><input type="number" class="form-control" value="20"/></div>
+              <div class="form-group"><label>Unit</label><select class="form-control"><option>Tonnes</option><option>KG</option><option>Pieces</option></select></div>
+            </div>
+            <div class="form-group"><label>Required By Date</label><input type="date" class="form-control"/></div>
+            <div class="form-group"><label>Delivery Address</label><select class="form-control"><option>Warehouse Central, KL</option><option>Warehouse North, Kedah</option></select></div>
+            <div class="form-group"><label>Special Instructions</label><textarea class="form-control" rows="2" placeholder="Any delivery notes..."></textarea></div>
+            <button class="btn btn-primary" style="width:100%">📤 Submit Purchase Order</button>
+          </div>
+          <div class="card">
+            <div class="section-header"><h3>📊 Supplier Performance</h3></div>
+            <table>
+              <thead><tr><th>Supplier</th><th>Orders</th><th>On-Time</th><th>Rating</th></tr></thead>
+              <tbody>
+                <tr><td>AgroSupply Sdn</td><td>14</td><td>93%</td><td>⭐ 4.5</td></tr>
+                <tr><td>BioSeed Sdn</td><td>8</td><td>88%</td><td>⭐ 4.2</td></tr>
+                <tr><td>GrainCo Bhd</td><td>11</td><td>75%</td><td>⭐ 3.8</td></tr>
+                <tr><td>PackPro Sdn</td><td>6</td><td>100%</td><td>⭐ 5.0</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-body" id="supplier-stock">
+        <div class="page-header"><h2>Stock Level Monitor</h2><p>Auto-reorder thresholds and current stock vs reorder points</p></div>
+        <div class="card">
+          <div class="section-header"><h3>🔄 Reorder Settings</h3></div>
+          <table>
+            <thead><tr><th>Item</th><th>Current Stock</th><th>Reorder Level</th><th>Reorder Qty</th><th>Auto-Order</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td>NPK Fertiliser</td><td>4.2t</td><td>5t</td><td>15t</td><td><span class="stat-badge badge-green">Enabled</span></td><td><button class="btn btn-outline btn-sm">Edit</button></td></tr>
+              <tr><td>Wheat</td><td>8t</td><td>10t</td><td>50t</td><td><span class="stat-badge badge-green">Enabled</span></td><td><button class="btn btn-amber btn-sm">Order Now</button></td></tr>
+              <tr><td>Soybean Seeds</td><td>1.2t</td><td>2t</td><td>5t</td><td><span class="stat-badge badge-green">Enabled</span></td><td><button class="btn btn-amber btn-sm">Order Now</button></td></tr>
+              <tr><td>Packaging 10kg</td><td>800 pcs</td><td>500 pcs</td><td>2000 pcs</td><td><span class="stat-badge badge-amber">Disabled</span></td><td><button class="btn btn-outline btn-sm">Enable</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ADMIN / ANALYTICS PAGES ── -->
+    <div id="pages-admin">
+      <div class="page-body" id="admin-dashboard">
+        <div class="page-header"><h2>System Overview</h2><p>Central DBMS — Full system health and operational analytics</p></div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-label">Total Farmers</div><div class="stat-value">127</div><div class="stat-sub">Active users</div><span class="stat-badge badge-green">+8 this month</span></div>
+          <div class="stat-card"><div class="stat-label">Total Warehouses</div><div class="stat-value">6</div><div class="stat-sub">Across 3 regions</div><span class="stat-badge badge-blue">All Online</span></div>
+          <div class="stat-card"><div class="stat-label">IoT Sensors</div><div class="stat-value">284</div><div class="stat-sub">Active field sensors</div><span class="stat-badge badge-green">98% uptime</span></div>
+          <div class="stat-card"><div class="stat-label">Monthly Volume</div><div class="stat-value">1,240t</div><div class="stat-sub">Total processed</div><span class="stat-badge badge-green">+15%</span></div>
+        </div>
+        <div class="two-thirds">
+          <div class="card">
+            <div class="section-header"><h3>📈 System-Wide Production (tonnes/month)</h3></div>
+            <div class="bar-chart" style="height:160px">
+              <div class="bar" style="height:55%"></div>
+              <div class="bar" style="height:70%"></div>
+              <div class="bar" style="height:62%"></div>
+              <div class="bar" style="height:85%"></div>
+              <div class="bar" style="height:78%"></div>
+              <div class="bar amber" style="height:100%"></div>
+            </div>
+            <div class="chart-labels"><span>Oct</span><span>Nov</span><span>Dec</span><span>Jan</span><span>Feb</span><span>Mar</span></div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="section-header"><h3>⚠️ System Alerts</h3></div>
+              <div class="alert alert-danger" style="margin-bottom:10px">🔴 Wheat stock critical at Warehouse KL</div>
+              <div class="alert alert-warning" style="margin-bottom:10px">🟡 Sensor #S-088 offline — Plot D4</div>
+              <div class="alert alert-success" style="margin-bottom:0">🟢 All processing lines operational</div>
+            </div>
+            <div class="card">
+              <div class="section-header"><h3>🌐 System Status</h3></div>
+              <div style="display:flex;flex-direction:column;gap:10px;font-size:0.85rem">
+                <div style="display:flex;justify-content:space-between"><span>Central DBMS</span><span class="stat-badge badge-green">Online</span></div>
+                <div style="display:flex;justify-content:space-between"><span>IoT Gateway</span><span class="stat-badge badge-green">Online</span></div>
+                <div style="display:flex;justify-content:space-between"><span>Mobile API</span><span class="stat-badge badge-green">Online</span></div>
+                <div style="display:flex;justify-content:space-between"><span>RFID Network</span><span class="stat-badge badge-amber">Degraded</span></div>
+                <div style="display:flex;justify-content:space-between"><span>Supplier Portal</span><span class="stat-badge badge-green">Online</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-body" id="admin-analytics">
+        <div class="page-header"><h2>Predictive Analytics</h2><p>AI-driven insights across farms, warehouses and supply chain</p></div>
+        <div class="two-col">
+          <div class="card">
+            <div class="section-header"><h3>🤖 AI Recommendations</h3></div>
+            <div class="timeline">
+              <div class="tl-item"><div class="tl-dot"></div><div class="tl-title">Increase Paddy Allocation — Warehouse North</div><div class="tl-meta">Demand forecast +22% for Q2 2025 · Confidence: 87%</div></div>
+              <div class="tl-item"><div class="tl-dot amber"></div><div class="tl-title">Pre-order Fertiliser Before Apr 10</div><div class="tl-meta">Price hike predicted based on commodity market · Savings est: RM 4,200</div></div>
+              <div class="tl-item"><div class="tl-dot"></div><div class="tl-title">Optimise Processing Line 2 Schedule</div><div class="tl-meta">Bottleneck detected in Maize drying phase · Throughput +18%</div></div>
+              <div class="tl-item"><div class="tl-dot red"></div><div class="tl-title">Pest Risk Alert — Plot B2 Region</div><div class="tl-meta">Weather pattern matches historical pest outbreak · Act within 7 days</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="section-header"><h3>📊 Demand Forecast (Next 3 Months)</h3></div>
+            <div class="bar-chart" style="height:150px">
+              <div class="bar" style="height:75%"></div>
+              <div class="bar" style="height:90%"></div>
+              <div class="bar amber" style="height:85%"></div>
+              <div class="bar amber" style="height:95%;opacity:0.7"></div>
+              <div class="bar amber" style="height:88%;opacity:0.5"></div>
+            </div>
+            <div class="chart-labels"><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr*</span><span>May*</span></div>
+            <p style="font-size:0.78rem;color:var(--text-muted);margin-top:8px">* Forecast months (amber) — AI projected demand</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-header"><h3>📋 Custom Report Builder</h3> <button class="btn btn-primary">▶ Generate Report</button></div>
+          <div class="three-col">
+            <div class="form-group"><label>Report Type</label><select class="form-control"><option>Production Summary</option><option>Inventory Report</option><option>Supplier Performance</option><option>Yield Analysis</option></select></div>
+            <div class="form-group"><label>Date Range</label><select class="form-control"><option>This Month</option><option>Last 3 Months</option><option>This Season</option><option>Custom Range</option></select></div>
+            <div class="form-group"><label>Export Format</label><select class="form-control"><option>PDF</option><option>Excel</option><option>CSV</option></select></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-body" id="admin-users">
+        <div class="page-header"><h2>User Management</h2><p>Manage system users, roles and permissions</p></div>
+        <div class="card">
+          <div class="section-header"><h3>👥 System Users</h3> <button class="btn btn-primary">+ Add User</button></div>
+          <table>
+            <thead><tr><th>Name</th><th>Role</th><th>Region</th><th>Last Login</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Ahmad Farid</strong></td><td>Farmer</td><td>Kedah</td><td>Today 9:15 AM</td><td><span class="stat-badge badge-green">Active</span></td><td><button class="btn btn-outline btn-sm">Edit</button></td></tr>
+              <tr><td><strong>Nurul Ain</strong></td><td>Warehouse Mgr</td><td>KL Central</td><td>Today 10:02 AM</td><td><span class="stat-badge badge-green">Active</span></td><td><button class="btn btn-outline btn-sm">Edit</button></td></tr>
+              <tr><td><strong>Razlan Ibrahim</strong></td><td>Processing Unit</td><td>Selangor</td><td>Yesterday</td><td><span class="stat-badge badge-green">Active</span></td><td><button class="btn btn-outline btn-sm">Edit</button></td></tr>
+              <tr><td><strong>Siti Mariam</strong></td><td>Supplier Portal</td><td>Perak</td><td>Mar 26</td><td><span class="stat-badge badge-amber">Inactive</span></td><td><button class="btn btn-outline btn-sm">Edit</button></td></tr>
+              <tr><td><strong>Dr. Amirul</strong></td><td>Admin</td><td>All Regions</td><td>Today 8:00 AM</td><td><span class="stat-badge badge-green">Active</span></td><td><button class="btn btn-outline btn-sm">Edit</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="page-body" id="admin-alerts">
+        <div class="page-header"><h2>System Alerts & Notifications</h2><p>Configure auto-alerts, thresholds and notification rules</p></div>
+        <div class="two-col">
+          <div class="card">
+            <div class="section-header"><h3>🔔 Active Alerts</h3></div>
+            <div class="notif-item"><div class="notif-icon red">🔴</div><div><div class="notif-text">Wheat stock below critical threshold at Warehouse KL</div><div class="notif-time">Auto-generated · 11:30 AM today</div></div></div>
+            <div class="notif-item"><div class="notif-icon amber">⚠️</div><div><div class="notif-text">Temperature spike in Zone B — Warehouse North</div><div class="notif-time">Sensor alert · 10:05 AM today</div></div></div>
+            <div class="notif-item"><div class="notif-icon amber">⚠️</div><div><div class="notif-text">Sensor #S-088 offline on Plot D4</div><div class="notif-time">IoT Gateway · 09:45 AM today</div></div></div>
+            <div class="notif-item"><div class="notif-icon green">✅</div><div><div class="notif-text">Batch BP-003 processing completed successfully</div><div class="notif-time">Auto-generated · 08:20 AM today</div></div></div>
+          </div>
+          <div class="card">
+            <div class="section-header"><h3>⚙️ Alert Rules</h3> <button class="btn btn-primary btn-sm">+ New Rule</button></div>
+            <table>
+              <thead><tr><th>Trigger</th><th>Threshold</th><th>Channel</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>Low stock</td><td>&lt; 10% capacity</td><td>Email + SMS</td><td><span class="stat-badge badge-green">On</span></td></tr>
+                <tr><td>Temp out of range</td><td>&gt; 25°C</td><td>SMS</td><td><span class="stat-badge badge-green">On</span></td></tr>
+                <tr><td>Sensor offline</td><td>&gt; 10 min</td><td>Dashboard</td><td><span class="stat-badge badge-green">On</span></td></tr>
+                <tr><td>Batch completion</td><td>100%</td><td>Email</td><td><span class="stat-badge badge-green">On</span></td></tr>
+                <tr><td>Delivery delay</td><td>&gt; 2 hrs</td><td>Email + SMS</td><td><span class="stat-badge badge-amber">Off</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end main-content -->
+</div><!-- end app -->
+
+<script>
+const ROLES = {
+  farmer: {
+    name: 'Farmer',
+    user: 'Ahmad Farid',
+    avatar: 'AF',
+    pill: '🌾 Farm: Plot A1',
+    nav: [
+      { section: 'Main' },
+      { id: 'farmer-dashboard', icon: '🏠', label: 'Dashboard' },
+      { section: 'Farm Activity' },
+      { id: 'farmer-sowing', icon: '🌱', label: 'Sowing Log' },
+      { id: 'farmer-harvest', icon: '🌾', label: 'Harvest Tracking' },
+      { id: 'farmer-predictions', icon: '📈', label: 'Crop Predictions' },
+    ],
+    defaultPage: 'farmer-dashboard'
+  },
+  warehouse: {
+    name: 'Warehouse Manager',
+    user: 'Nurul Ain',
+    avatar: 'NA',
+    pill: '🏭 Warehouse: KL Central',
+    nav: [
+      { section: 'Main' },
+      { id: 'warehouse-dashboard', icon: '🏠', label: 'Dashboard' },
+      { section: 'Operations' },
+      { id: 'warehouse-inventory', icon: '📦', label: 'Inventory' },
+      { id: 'warehouse-analytics', icon: '📊', label: 'Analytics' },
+    ],
+    defaultPage: 'warehouse-dashboard'
+  },
+  processing: {
+    name: 'Processing Unit',
+    user: 'Razlan Ibrahim',
+    avatar: 'RI',
+    pill: '⚙️ Unit: Selangor Plant',
+    nav: [
+      { section: 'Main' },
+      { id: 'processing-dashboard', icon: '🏠', label: 'Dashboard' },
+      { section: 'Operations' },
+      { id: 'processing-batches', icon: '🗂️', label: 'Batch Management' },
+      { id: 'processing-qc', icon: '🔬', label: 'Quality Control' },
+    ],
+    defaultPage: 'processing-dashboard'
+  },
+  supplier: {
+    name: 'Supplier Portal',
+    user: 'Siti Mariam',
+    avatar: 'SM',
+    pill: '🚚 Supplier Access',
+    nav: [
+      { section: 'Main' },
+      { id: 'supplier-dashboard', icon: '🏠', label: 'Dashboard' },
+      { section: 'Procurement' },
+      { id: 'supplier-orders', icon: '📋', label: 'Purchase Orders' },
+      { id: 'supplier-stock', icon: '📉', label: 'Stock Monitor' },
+    ],
+    defaultPage: 'supplier-dashboard'
+  },
+  admin: {
+    name: 'Admin / Analytics',
+    user: 'Dr. Amirul',
+    avatar: 'DA',
+    pill: '🔧 Admin: All Regions',
+    nav: [
+      { section: 'Main' },
+      { id: 'admin-dashboard', icon: '🏠', label: 'System Overview' },
+      { section: 'Analytics' },
+      { id: 'admin-analytics', icon: '📊', label: 'Predictive Analytics' },
+      { id: 'admin-alerts', icon: '🔔', label: 'Alerts & Rules' },
+      { section: 'Administration' },
+      { id: 'admin-users', icon: '👥', label: 'User Management' },
+    ],
+    defaultPage: 'admin-dashboard'
+  }
+};
+
+let currentRole = null;
+let currentPage = null;
+
+function enterRole(roleKey) {
+  currentRole = roleKey;
+  const role = ROLES[roleKey];
+
+  document.getElementById('role-screen').style.display = 'none';
+  const app = document.getElementById('app');
+  app.style.display = 'flex';
+  app.classList.add('active');
+
+  // Sidebar
+  document.getElementById('sidebar-role-name').textContent = role.name;
+  document.getElementById('sidebar-role-user').textContent = role.user;
+  document.getElementById('topbar-avatar').textContent = role.avatar;
+  document.getElementById('topbar-pill').textContent = '● ' + role.pill;
+
+  // Build nav
+  const navEl = document.getElementById('sidebar-nav');
+  navEl.innerHTML = '';
+  role.nav.forEach(item => {
+    if (item.section) {
+      const s = document.createElement('div');
+      s.className = 'nav-section';
+      s.textContent = item.section;
+      navEl.appendChild(s);
+    } else {
+      const n = document.createElement('div');
+      n.className = 'nav-item';
+      n.dataset.page = item.id;
+      n.innerHTML = `<span class="nav-icon">${item.icon}</span>${item.label}`;
+      n.onclick = () => navigateTo(item.id, item.label);
+      navEl.appendChild(n);
+    }
+  });
+
+  navigateTo(role.defaultPage, role.nav.find(n => n.id === role.defaultPage)?.label || 'Dashboard');
+}
+
+function navigateTo(pageId, label) {
+  // Hide all pages
+  document.querySelectorAll('.page-body').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  // Show target page
+  const page = document.getElementById(pageId);
+  if (page) {
+    page.classList.add('active');
+    currentPage = pageId;
+  }
+
+  // Set active nav
+  const navItem = document.querySelector(`.nav-item[data-page="${pageId}"]`);
+  if (navItem) navItem.classList.add('active');
+
+  document.getElementById('topbar-title').textContent = label || pageId;
+}
+
+function switchRole() {
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('app').classList.remove('active');
+  document.getElementById('role-screen').style.display = 'flex';
+  currentRole = null;
+}
+</script>
+</body>
+</html>
