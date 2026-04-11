@@ -9,32 +9,54 @@ import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Layout from './components/Layout';
 
-// Farmer Pages
+// Farmer
 import FarmerDashboard from './pages/farmer/FarmerDashboard';
 import SowingLog from './pages/farmer/SowingLog';
-import HarvestTracking from './pages/farmer/HarvestTracking';
-import CropPredictions from './pages/farmer/CropPredictions';
+import HarvestBatch from './pages/farmer/HarvestBatch';
+import InputSupplyReceived from './pages/farmer/InputSupplyReceived';
 
-// Warehouse Pages
-import WarehouseDashboard from './pages/warehouse/WarehouseDashboard';
-import InventoryManagement from './pages/warehouse/InventoryManagement';
-import WarehouseAnalytics from './pages/warehouse/WarehouseAnalytics';
-
-// Processing Pages
-import ProcessingDashboard from './pages/processing/ProcessingDashboard';
-import BatchManagement from './pages/processing/BatchManagement';
-import QualityControl from './pages/processing/QualityControl';
-
-// Supplier Pages
+// Supplier
 import SupplierDashboard from './pages/supplier/SupplierDashboard';
-import OrderManagement from './pages/supplier/OrderManagement';
-import StockMonitor from './pages/supplier/StockMonitor';
+import InputSupplyManagement from './pages/supplier/InputSupplyManagement';
 
-// Admin Pages
+// Warehouse
+import WarehouseDashboard from './pages/warehouse/WarehouseDashboard';
+import WarehouseList from './pages/warehouse/WarehouseList';
+import InventoryManagement from './pages/warehouse/InventoryManagement';
+import StockMovement from './pages/warehouse/StockMovement';
+import SensorMonitor from './pages/warehouse/SensorMonitor';
+
+// Processing
+import ProcessingDashboard from './pages/processing/ProcessingDashboard';
+import ProcessingPlants from './pages/processing/ProcessingPlants';
+import BatchManagement from './pages/processing/BatchManagement';
+
+// Quality Inspector
+import QualityDashboard from './pages/quality/QualityDashboard';
+import QualityReports from './pages/quality/QualityReports';
+
+// Logistics Manager
+import LogisticsDashboard from './pages/logistics/LogisticsDashboard';
+import DeliveryManagement from './pages/logistics/DeliveryManagement';
+
+// Market Operator
+import MarketDashboard from './pages/market/MarketDashboard';
+import MarketList from './pages/market/MarketList';
+import SalesManagement from './pages/market/SalesManagement';
+
+// Admin
 import SystemOverview from './pages/admin/SystemOverview';
 import PredictiveAnalytics from './pages/admin/PredictiveAnalytics';
 import UserManagement from './pages/admin/UserManagement';
 import SystemAlerts from './pages/admin/SystemAlerts';
+import FarmerDataAdmin from './pages/admin/FarmerDataAdmin';
+import WarehouseDataAdmin from './pages/admin/WarehouseDataAdmin';
+import ProcessingDataAdmin from './pages/admin/ProcessingDataAdmin';
+import SupplierDataAdmin from './pages/admin/SupplierDataAdmin';
+import QualityDataAdmin from './pages/admin/QualityDataAdmin';
+import DeliveryDataAdmin from './pages/admin/DeliveryDataAdmin';
+import MarketDataAdmin from './pages/admin/MarketDataAdmin';
+import BatchTraceability from './pages/admin/BatchTraceability';
 
 function App() {
   const { currentRole, user } = useContext(RoleContext);
@@ -57,50 +79,72 @@ function App() {
     <Layout>
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
-          {/* Redirect root to default page of current role */}
           <Route path="/" element={<Navigate to={currentRole.defaultPage} replace />} />
 
-          {currentRole.key === 'farmer' && (
-            <>
-              <Route path="/farmer" element={<PageTransition><FarmerDashboard /></PageTransition>} />
-              <Route path="/farmer/sowing" element={<PageTransition><SowingLog /></PageTransition>} />
-              <Route path="/farmer/harvest" element={<PageTransition><HarvestTracking /></PageTransition>} />
-              <Route path="/farmer/predictions" element={<PageTransition><CropPredictions /></PageTransition>} />
-            </>
-          )}
+          {/* Farmer (F) */}
+          {currentRole.key === 'F' && (<>
+            <Route path="/farmer" element={<PageTransition><FarmerDashboard /></PageTransition>} />
+            <Route path="/farmer/sowing" element={<PageTransition><SowingLog /></PageTransition>} />
+            <Route path="/farmer/harvest" element={<PageTransition><HarvestBatch /></PageTransition>} />
+            <Route path="/farmer/inputs" element={<PageTransition><InputSupplyReceived /></PageTransition>} />
+          </>)}
 
-          {currentRole.key === 'warehouse' && (
-            <>
-              <Route path="/warehouse" element={<PageTransition><WarehouseDashboard /></PageTransition>} />
-              <Route path="/warehouse/inventory" element={<PageTransition><InventoryManagement /></PageTransition>} />
-              <Route path="/warehouse/analytics" element={<PageTransition><WarehouseAnalytics /></PageTransition>} />
-            </>
-          )}
+          {/* Supplier (S) */}
+          {currentRole.key === 'S' && (<>
+            <Route path="/supplier" element={<PageTransition><SupplierDashboard /></PageTransition>} />
+            <Route path="/supplier/inputs" element={<PageTransition><InputSupplyManagement /></PageTransition>} />
+          </>)}
 
-          {currentRole.key === 'processing' && (
-            <>
-              <Route path="/processing" element={<PageTransition><ProcessingDashboard /></PageTransition>} />
-              <Route path="/processing/batches" element={<PageTransition><BatchManagement /></PageTransition>} />
-              <Route path="/processing/qc" element={<PageTransition><QualityControl /></PageTransition>} />
-            </>
-          )}
+          {/* Warehouse Manager (WM) */}
+          {currentRole.key === 'WM' && (<>
+            <Route path="/warehouse" element={<PageTransition><WarehouseDashboard /></PageTransition>} />
+            <Route path="/warehouse/warehouses" element={<PageTransition><WarehouseList /></PageTransition>} />
+            <Route path="/warehouse/inventory" element={<PageTransition><InventoryManagement /></PageTransition>} />
+            <Route path="/warehouse/stock-movement" element={<PageTransition><StockMovement /></PageTransition>} />
+            <Route path="/warehouse/sensors" element={<PageTransition><SensorMonitor /></PageTransition>} />
+          </>)}
 
-          {currentRole.key === 'supplier' && (
-            <>
-              <Route path="/supplier" element={<PageTransition><SupplierDashboard /></PageTransition>} />
-              <Route path="/supplier/orders" element={<PageTransition><OrderManagement /></PageTransition>} />
-              <Route path="/supplier/stock" element={<PageTransition><StockMonitor /></PageTransition>} />
-            </>
-          )}
+          {/* Processing Manager (PM) */}
+          {currentRole.key === 'PM' && (<>
+            <Route path="/processing" element={<PageTransition><ProcessingDashboard /></PageTransition>} />
+            <Route path="/processing/plants" element={<PageTransition><ProcessingPlants /></PageTransition>} />
+            <Route path="/processing/batches" element={<PageTransition><BatchManagement /></PageTransition>} />
+          </>)}
 
-          {currentRole.key === 'admin' && (
-            <>
-              <Route path="/admin" element={<PageTransition><SystemOverview /></PageTransition>} />
-              <Route path="/admin/analytics" element={<PageTransition><PredictiveAnalytics /></PageTransition>} />
-              <Route path="/admin/users" element={<PageTransition><UserManagement /></PageTransition>} />
-              <Route path="/admin/alerts" element={<PageTransition><SystemAlerts /></PageTransition>} />
-            </>
-          )}
+          {/* Quality Inspector (QI) */}
+          {currentRole.key === 'QI' && (<>
+            <Route path="/quality" element={<PageTransition><QualityDashboard /></PageTransition>} />
+            <Route path="/quality/reports" element={<PageTransition><QualityReports /></PageTransition>} />
+          </>)}
+
+          {/* Logistics Manager (LM) */}
+          {currentRole.key === 'LM' && (<>
+            <Route path="/logistics" element={<PageTransition><LogisticsDashboard /></PageTransition>} />
+            <Route path="/logistics/delivery" element={<PageTransition><DeliveryManagement /></PageTransition>} />
+          </>)}
+
+          {/* Market Operator (MO) */}
+          {currentRole.key === 'MO' && (<>
+            <Route path="/market" element={<PageTransition><MarketDashboard /></PageTransition>} />
+            <Route path="/market/markets" element={<PageTransition><MarketList /></PageTransition>} />
+            <Route path="/market/sales" element={<PageTransition><SalesManagement /></PageTransition>} />
+          </>)}
+
+          {/* Admin (A) */}
+          {currentRole.key === 'A' && (<>
+            <Route path="/admin" element={<PageTransition><SystemOverview /></PageTransition>} />
+            <Route path="/admin/analytics" element={<PageTransition><PredictiveAnalytics /></PageTransition>} />
+            <Route path="/admin/users" element={<PageTransition><UserManagement /></PageTransition>} />
+            <Route path="/admin/alerts" element={<PageTransition><SystemAlerts /></PageTransition>} />
+            <Route path="/admin/farmer-data" element={<PageTransition><FarmerDataAdmin /></PageTransition>} />
+            <Route path="/admin/warehouse-data" element={<PageTransition><WarehouseDataAdmin /></PageTransition>} />
+            <Route path="/admin/processing-data" element={<PageTransition><ProcessingDataAdmin /></PageTransition>} />
+            <Route path="/admin/supplier-data" element={<PageTransition><SupplierDataAdmin /></PageTransition>} />
+            <Route path="/admin/quality-data" element={<PageTransition><QualityDataAdmin /></PageTransition>} />
+            <Route path="/admin/delivery-data" element={<PageTransition><DeliveryDataAdmin /></PageTransition>} />
+            <Route path="/admin/market-data" element={<PageTransition><MarketDataAdmin /></PageTransition>} />
+            <Route path="/admin/batch-trace" element={<PageTransition><BatchTraceability /></PageTransition>} />
+          </>)}
 
           <Route path="*" element={<Navigate to={currentRole.defaultPage} replace />} />
         </Routes>

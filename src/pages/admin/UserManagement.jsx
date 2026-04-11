@@ -2,162 +2,109 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Badge } from '../../components/SharedUI';
 
+const ROLE_LABELS = { F: '👨‍🌾 Farmer', S: '🚚 Supplier', WM: '🏭 WH Manager', PM: '⚙️ Proc. Manager', QI: '🔬 Quality Inspector', A: '🛡️ Admin', MO: '🏪 Market Operator', LM: '🚛 Logistics Manager' };
+const BASE = 'http://localhost:3001/api/admin';
+
+const emptyUser = { first_name: '', last_name: '', email: '', password: '', role_type: 'F', status: 'Active' };
+
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-  // Create / Edit State
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [formData, setFormData] = useState({
-    name: '', email: '', password: '', role: 'farmer', region: 'Not Specified', status: 'Active'
-  });
+  const [form, setForm] = useState(emptyUser);
+  const [search, setSearch] = useState('');
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  const load = async () => { setLoading(true); try { const r = await axios.get(`${BASE}/users`); setUsers(r.data); } catch { setUsers([]); } finally { setLoading(false); } };
+  useEffect(() => { load(); }, []);
 
-  const fetchUsers = async () => {
-    try {
-      const res = await axios.get('http://localhost:3001/api/admin/users');
-      setUsers(res.data);
-    } catch (err) {
-      console.error('API Error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleEdit = (user) => {
-    setEditingId(user.id);
-    setFormData({
-      name: user.name,
-      email: user.email,
-      password: '', // Password hidden/not editable here directly unless resetting
-      role: user.role,
-      region: user.region,
-      status: user.status
-    });
-    setShowForm(true);
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this user?')) return;
-    try {
-      await axios.delete(`http://localhost:3001/api/admin/users/${id}`);
-      fetchUsers();
-    } catch (err) {
-      console.error('Delete error', err);
-      alert('Failed to delete user');
-    }
-  };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     try {
-      if (editingId) {
-        // Update user
-        await axios.put(`http://localhost:3001/api/admin/users/${editingId}`, formData);
-        alert('User updated successfully');
-      } else {
-        // Create user via admin specific route
-        await axios.post('http://localhost:3001/api/admin/users', formData);
-        alert('User created successfully');
-      }
-      setShowForm(false);
-      setEditingId(null);
-      setFormData({ name: '', email: '', password: '', role: 'farmer', region: 'Not Specified', status: 'Active' });
-      fetchUsers();
-    } catch (err) {
-      console.error('Submit error:', err);
-      alert(err.response?.data?.message || 'Failed to save user');
-    }
+      if (editingId) await axios.put(`${BASE}/users/${editingId}`, form);
+      else await axios.post(`${BASE}/users`, form);
+      setShowForm(false); setEditingId(null); setForm(emptyUser); load();
+    } catch (err) { alert(err.response?.data?.message || err.response?.data?.error || 'Failed'); }
   };
+
+  const handleDelete = async id => {
+    if (!window.confirm('Delete this user? This cannot be undone.')) return;
+    try { await axios.delete(`${BASE}/users/${id}`); load(); }
+    catch { alert('Delete failed'); }
+  };
+
+  const fi = k => e => setForm({ ...form, [k]: e.target.value });
+
+  const filtered = users.filter(u =>
+    `${u.first_name} ${u.last_name} ${u.email}`.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const roleColor = r => ({ F: 'green', S: 'amber', WM: 'blue', PM: 'blue', QI: 'blue', A: 'red', MO: 'green', LM: 'amber' }[r] || 'blue');
 
   return (
     <div className="page-body active">
       <div className="page-header">
-        <h2>User Management</h2>
-        <p>Manage system users, roles and permissions</p>
+        <h2>👥 User Management</h2>
+        <p>Admin view — Manage all user accounts across all 8 roles</p>
       </div>
 
       {showForm && (
-        <div className="card" style={{ marginBottom: '20px', border: '1px solid var(--primary)' }}>
+        <div className="card" style={{ marginBottom: 20, border: '1px solid var(--primary)' }}>
           <div className="section-header">
-            <h3>{editingId ? '✏️ Edit User' : '➕ Create New User'}</h3>
+            <h3>{editingId ? '✏️ Edit User' : '➕ Add User'}</h3>
             <button className="btn btn-outline btn-sm" onClick={() => { setShowForm(false); setEditingId(null); }}>Cancel</button>
           </div>
           <form onSubmit={handleSubmit}>
             <div className="three-col">
-              <div className="form-group">
-                <label>Full Name</label>
-                <input type="text" className="form-control" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
-              </div>
-              <div className="form-group">
-                <label>Email Address</label>
-                <input type="email" className="form-control" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} required />
-              </div>
-              <div className="form-group">
-                <label>Password {!editingId && <span style={{color:'red'}}>*</span>}</label>
-                <input type="text" className="form-control" placeholder={editingId ? "Leave blank to keep same" : "Temporary password"} value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} required={!editingId} />
-              </div>
+              <div className="form-group"><label>First Name</label><input className="form-control" value={form.first_name} onChange={fi('first_name')} required /></div>
+              <div className="form-group"><label>Last Name</label><input className="form-control" value={form.last_name} onChange={fi('last_name')} required /></div>
+              <div className="form-group"><label>Email</label><input type="email" className="form-control" value={form.email} onChange={fi('email')} required /></div>
             </div>
             <div className="three-col">
-              <div className="form-group">
-                <label>Role</label>
-                <select className="form-control" value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})}>
-                  <option value="farmer">Farmer</option>
-                  <option value="warehouse">Warehouse Manager</option>
-                  <option value="processing">Processing Unit</option>
-                  <option value="supplier">Supplier</option>
-                  <option value="admin">Admin</option>
+              {!editingId && <div className="form-group"><label>Password</label><input type="password" className="form-control" value={form.password} onChange={fi('password')} placeholder="Default: agrichain123" /></div>}
+              <div className="form-group"><label>Role</label>
+                <select className="form-control" value={form.role_type} onChange={fi('role_type')}>
+                  {Object.entries(ROLE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>
               </div>
-              <div className="form-group">
-                <label>Region</label>
-                <input type="text" className="form-control" value={formData.region} onChange={e => setFormData({...formData, region: e.target.value})} />
-              </div>
-              <div className="form-group">
-                <label>Status</label>
-                <select className="form-control" value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})}>
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
+              <div className="form-group"><label>Status</label>
+                <select className="form-control" value={form.status} onChange={fi('status')}>
+                  <option>Active</option><option>Inactive</option><option>Suspended</option>
                 </select>
               </div>
             </div>
-            <button type="submit" className="btn btn-primary">{editingId ? '💾 Save Changes' : '✅ Create User'}</button>
+            <button type="submit" className="btn btn-primary">{editingId ? '💾 Save' : '✅ Create User'}</button>
           </form>
         </div>
       )}
 
       <div className="card">
         <div className="section-header">
-          <h3>👥 System Users</h3> 
-          {!showForm && (
-            <button className="btn btn-primary" onClick={() => {
-              setEditingId(null);
-              setFormData({ name: '', email: '', password: '', role: 'farmer', region: 'Not Specified', status: 'Active' });
-              setShowForm(true);
-            }}>+ Add User</button>
-          )}
+          <h3>📋 All Users ({users.length})</h3>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <input className="form-control" placeholder="Search name or email…" value={search} onChange={e => setSearch(e.target.value)} style={{ width: 220 }} />
+            {!showForm && <button className="btn btn-primary" onClick={() => { setForm(emptyUser); setEditingId(null); setShowForm(true); }}>+ Add User</button>}
+          </div>
         </div>
         <table>
-          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Region</th><th>Status</th><th>Actions</th></tr></thead>
+          <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
           <tbody>
-            {users.map(u => (
-              <tr key={u.id}>
-                <td><strong>{u.name}</strong></td>
+            {loading && <tr><td colSpan="7" style={{ textAlign: 'center' }}>Loading…</td></tr>}
+            {!loading && filtered.length === 0 && <tr><td colSpan="7" style={{ textAlign: 'center' }}>No users found.</td></tr>}
+            {filtered.map(u => (
+              <tr key={u.user_id}>
+                <td><strong>#{u.user_id}</strong></td>
+                <td>{u.first_name} {u.last_name}</td>
                 <td>{u.email}</td>
-                <td><span style={{textTransform: 'capitalize'}}>{u.role}</span></td>
-                <td>{u.region}</td>
-                <td><Badge text={u.status} color={u.status === 'Active' ? 'green' : 'amber'} /></td>
+                <td><Badge text={ROLE_LABELS[u.role_type] || u.role_type} color={roleColor(u.role_type)} /></td>
+                <td><Badge text={u.status} color={u.status === 'Active' ? 'green' : 'red'} /></td>
+                <td>{u.created_at ? new Date(u.created_at).toLocaleDateString() : '—'}</td>
                 <td>
-                  <button className="btn btn-outline btn-sm" style={{marginRight: '8px'}} onClick={() => handleEdit(u)}>Edit</button>
-                  <button className="btn btn-amber btn-sm" onClick={() => handleDelete(u.id)}>Delete</button>
+                  <button className="btn btn-outline btn-sm" style={{ marginRight: 6 }} onClick={() => { setForm({ first_name: u.first_name, last_name: u.last_name, email: u.email, role_type: u.role_type, status: u.status, password: '' }); setEditingId(u.user_id); setShowForm(true); }}>Edit</button>
+                  <button className="btn btn-amber btn-sm" onClick={() => handleDelete(u.user_id)}>Delete</button>
                 </td>
               </tr>
             ))}
-            {users.length === 0 && !loading && <tr><td colSpan="6" style={{textAlign:'center'}}>No users found. Ensure backend is running.</td></tr>}
           </tbody>
         </table>
       </div>

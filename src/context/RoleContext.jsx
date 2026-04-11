@@ -4,47 +4,79 @@ import axios from 'axios';
 export const RoleContext = createContext();
 
 const ROLES = {
-  farmer: {
-    key: 'farmer', name: 'Farmer Hub', user: 'Farmer', avatar: '👨‍🌾', pill: 'Live Sensor Data Active', defaultPage: '/farmer',
+  F: {
+    key: 'F', name: 'Farmer Hub', avatar: '👨‍🌾', pill: 'Live Sensor Data Active', defaultPage: '/farmer',
     nav: [
       { label: 'Farm Dashboard', path: '/farmer', icon: '📊' },
-      { label: 'Sowing Log', path: '/farmer/sowing', icon: '🌱' },
-      { label: 'Harvest Tracking', path: '/farmer/harvest', icon: '🌾' },
-      { label: 'Crop Predictions (AI)', path: '/farmer/predictions', icon: '📈' }
+      { label: 'Sowing Logs', path: '/farmer/sowing', icon: '🌱' },
+      { label: 'Harvest Batches', path: '/farmer/harvest', icon: '🌾' },
+      { label: 'Input Supplies Received', path: '/farmer/inputs', icon: '📦' },
     ]
   },
-  warehouse: {
-    key: 'warehouse', name: 'Central Warehouse', user: 'WH_Manager', avatar: '🏭', pill: 'Capacity: 84%', defaultPage: '/warehouse',
+  S: {
+    key: 'S', name: 'Supplier Portal', avatar: '🚚', pill: 'Supply Management', defaultPage: '/supplier',
+    nav: [
+      { label: 'Supplier Dashboard', path: '/supplier', icon: '📊' },
+      { label: 'Input Supply Records', path: '/supplier/inputs', icon: '📦' },
+    ]
+  },
+  WM: {
+    key: 'WM', name: 'Central Warehouse', avatar: '🏭', pill: 'Warehouse Operations', defaultPage: '/warehouse',
     nav: [
       { label: 'Overview', path: '/warehouse', icon: '📊' },
-      { label: 'Inventory Management', path: '/warehouse/inventory', icon: '📦' },
-      { label: 'Throughput Analytics', path: '/warehouse/analytics', icon: '📈' }
+      { label: 'Warehouses', path: '/warehouse/warehouses', icon: '🏗️' },
+      { label: 'Inventory', path: '/warehouse/inventory', icon: '📦' },
+      { label: 'Stock Movement', path: '/warehouse/stock-movement', icon: '🔄' },
+      { label: 'Sensor Monitor', path: '/warehouse/sensors', icon: '📡' },
     ]
   },
-  processing: {
-    key: 'processing', name: 'Processing Unit', user: 'Plant_Supervisor', avatar: '⚙️', pill: 'Lines Running: 3', defaultPage: '/processing',
+  PM: {
+    key: 'PM', name: 'Processing Unit', avatar: '⚙️', pill: 'Processing Operations', defaultPage: '/processing',
     nav: [
       { label: 'Processing Status', path: '/processing', icon: '🔄' },
+      { label: 'Processing Plants', path: '/processing/plants', icon: '🏭' },
       { label: 'Batch Management', path: '/processing/batches', icon: '📋' },
-      { label: 'Quality Control', path: '/processing/qc', icon: '🔬' }
     ]
   },
-  supplier: {
-    key: 'supplier', name: 'Supplier Portal', user: 'Supplier', avatar: '🚚', pill: '2 Orders Pending', defaultPage: '/supplier',
+  QI: {
+    key: 'QI', name: 'Quality Control', avatar: '🔬', pill: 'QC Lab Active', defaultPage: '/quality',
     nav: [
-      { label: 'Fulfillment Dashboard', path: '/supplier', icon: '🚚' },
-      { label: 'Purchase Orders', path: '/supplier/orders', icon: '📋' },
-      { label: 'Stock Reorder Levels', path: '/supplier/stock', icon: '📦' }
+      { label: 'QC Dashboard', path: '/quality', icon: '📊' },
+      { label: 'Quality Reports', path: '/quality/reports', icon: '🔬' },
     ]
   },
-  admin: {
-    key: 'admin', name: 'Admin Console', user: 'System_Admin', avatar: '🛡️', pill: 'System Normal', defaultPage: '/admin',
+  LM: {
+    key: 'LM', name: 'Logistics', avatar: '🚛', pill: 'Fleet Active', defaultPage: '/logistics',
+    nav: [
+      { label: 'Logistics Dashboard', path: '/logistics', icon: '📊' },
+      { label: 'Delivery Management', path: '/logistics/delivery', icon: '🚚' },
+    ]
+  },
+  MO: {
+    key: 'MO', name: 'Market Portal', avatar: '🏪', pill: 'Market Operations', defaultPage: '/market',
+    nav: [
+      { label: 'Market Dashboard', path: '/market', icon: '📊' },
+      { label: 'Markets', path: '/market/markets', icon: '🏪' },
+      { label: 'Sales Records', path: '/market/sales', icon: '💰' },
+    ]
+  },
+  A: {
+    key: 'A', name: 'Admin Console', avatar: '🛡️', pill: 'System Normal', defaultPage: '/admin',
     nav: [
       { label: 'System Overview', path: '/admin', icon: '🌐' },
       { label: 'Predictive Analytics', path: '/admin/analytics', icon: '📈' },
+      { section: 'DATA MANAGEMENT' },
+      { label: 'Farmer Data', path: '/admin/farmer-data', icon: '🌱' },
+      { label: 'Warehouse Data', path: '/admin/warehouse-data', icon: '📦' },
+      { label: 'Processing Data', path: '/admin/processing-data', icon: '⚙️' },
+      { label: 'Supplier Data', path: '/admin/supplier-data', icon: '🚚' },
+      { label: 'Quality Data', path: '/admin/quality-data', icon: '🔬' },
+      { label: 'Delivery Data', path: '/admin/delivery-data', icon: '🚛' },
+      { label: 'Market & Sales', path: '/admin/market-data', icon: '💰' },
+      { label: 'Batch Traceability', path: '/admin/batch-trace', icon: '🔗' },
       { section: 'MANAGEMENT' },
       { label: 'User Management', path: '/admin/users', icon: '👥' },
-      { label: 'System Alerts & Config', path: '/admin/alerts', icon: '⚙️' }
+      { label: 'System Alerts', path: '/admin/alerts', icon: '⚙️' },
     ]
   }
 };
@@ -69,23 +101,24 @@ export const RoleProvider = ({ children }) => {
     delete axios.defaults.headers.common['Authorization'];
   };
 
-  // On mount, apply token if exists
   useEffect(() => {
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     }
   }, [token]);
 
-  const currentRole = user ? { ...ROLES[user.role], user: user.name } : null;
+  const updateUser = (updates) => {
+    const newUser = { ...user, ...updates };
+    setUser(newUser);
+    localStorage.setItem('user', JSON.stringify(newUser));
+  };
+
+  const currentRole = user
+    ? { ...ROLES[user.role_type], user: `${user.first_name} ${user.last_name}` }
+    : null;
 
   return (
-    <RoleContext.Provider value={{
-      token,
-      user,
-      currentRole,
-      login,
-      logout
-    }}>
+    <RoleContext.Provider value={{ token, user, currentRole, login, logout, updateUser }}>
       {children}
     </RoleContext.Provider>
   );

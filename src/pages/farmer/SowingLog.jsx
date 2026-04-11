@@ -2,148 +2,126 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Badge } from '../../components/SharedUI';
 
+const BASE = 'http://localhost:3001/api/farmer';
+
+const emptySowing = { farmer_id: '', sowing_date: '', expected_harvest_date: '', seed_type: '', used_quantity: '' };
+
 const SowingLog = () => {
   const [records, setRecords] = useState([]);
+  const [farmers, setFarmers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [formData, setFormData] = useState({
-    plot: 'Plot A1 — Paddy Field',
-    crop_type: 'Paddy (Rice)',
-    seed_type: 'Hybrid MR219',
-    sowing_date: '2025-01-15',
-    expected_harvest_date: '2025-05-15',
-    seed_qty: 120,
-    variety: 'MR219 Elite',
-    fertiliser: 'NPK 15-15-15, 50kg/ha',
-    pesticides: 'None',
-    usage_rates: '50kg/ha',
-    notes: 'Good soil moisture. Applied pre-emergent herbicide.'
-  });
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [form, setForm] = useState(emptySowing);
 
-  useEffect(() => {
-    fetchRecords();
-  }, []);
-
-  const fetchRecords = async () => {
+  const load = async () => {
+    setLoading(true);
     try {
-      const res = await axios.get('http://localhost:3001/api/farmer/sowing');
-      setRecords(res.data);
-    } catch (err) {
-      console.error('API Error:', err);
-      // Fallback data
-      setRecords([
-        { id: 1, plot: 'A1', crop_type: 'Paddy', sowing_date: '2025-01-15', status: 'Growing' },
-        { id: 2, plot: 'B2', crop_type: 'Maize', sowing_date: '2025-01-20', status: 'Growing' },
-        { id: 3, plot: 'C3', crop_type: 'Soybean', sowing_date: '2025-02-02', status: 'Germinating' },
-        { id: 4, plot: 'D4', crop_type: 'Wheat', sowing_date: '2024-12-10', status: 'Harvested' }
-      ]);
-    } finally {
-      setLoading(false);
-    }
+      const [r, f] = await Promise.all([axios.get(`${BASE}/sowing`), axios.get(`${BASE}/farmers-list`)]);
+      setRecords(r.data); setFarmers(f.data);
+    } catch { setRecords([]); } finally { setLoading(false); }
+  };
+  useEffect(() => { load(); }, []);
+
+  const openCreate = () => { setForm(emptySowing); setEditingId(null); setShowForm(true); };
+  const openEdit = rec => {
+    setForm({
+      ...rec,
+      sowing_date: rec.sowing_date?.split('T')[0] || rec.sowing_date,
+      expected_harvest_date: rec.expected_harvest_date?.split('T')[0] || rec.expected_harvest_date
+    });
+    setEditingId(rec.sowing_id); setShowForm(true);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async e => {
+    e.preventDefault();
     try {
-      await axios.post('http://localhost:3001/api/farmer/sowing', formData);
-      fetchRecords();
-      alert('Sowing record saved successfully!');
-    } catch (err) {
-      console.error('Error saving record:', err);
-      alert('Failed to save record.');
-    }
+      if (editingId) await axios.put(`${BASE}/sowing/${editingId}`, form);
+      else await axios.post(`${BASE}/sowing`, form);
+      setShowForm(false); setEditingId(null); setForm(emptySowing); load();
+    } catch (err) { alert(err.response?.data?.error || 'Failed to save'); }
   };
+
+  const handleDelete = async id => {
+    if (!window.confirm('Delete this sowing log?')) return;
+    try { await axios.delete(`${BASE}/sowing/${id}`); load(); }
+    catch { alert('Delete failed'); }
+  };
+
+  const f = k => e => setForm({ ...form, [k]: e.target.value });
 
   return (
     <div className="page-body active">
       <div className="page-header">
-        <h2>Sowing Log</h2>
-        <p>Record and track planting activities for each plot</p>
+        <h2>🌱 Sowing Logs</h2>
+        <p>Record and manage all sowing activities with seed type and expected harvest dates</p>
       </div>
-      <div className="two-col">
-        <div className="card">
-          <div className="section-header"><h3>➕ New Sowing Record</h3></div>
-          <div className="form-group">
-            <label>Plot / Field ID</label>
-            <select className="form-control" value={formData.plot} onChange={e => setFormData({...formData, plot: e.target.value})}>
-              <option>Plot A1 — Paddy Field</option>
-              <option>Plot B2 — Maize Field</option>
-              <option>Plot C3 — Soybean Field</option>
-            </select>
+
+      {showForm && (
+        <div className="card" style={{ marginBottom: 20, border: '1px solid var(--primary)' }}>
+          <div className="section-header">
+            <h3>{editingId ? '✏️ Edit Sowing Log' : '➕ New Sowing Log'}</h3>
+            <button className="btn btn-outline btn-sm" onClick={() => { setShowForm(false); setEditingId(null); }}>Cancel</button>
           </div>
-          <div className="form-group">
-            <label>Crop Type</label>
-            <select className="form-control" value={formData.crop_type} onChange={e => setFormData({...formData, crop_type: e.target.value})}>
-              <option>Paddy (Rice)</option>
-              <option>Maize</option>
-              <option>Soybean</option>
-              <option>Wheat</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label>Seed Type</label>
-            <input type="text" className="form-control" value={formData.seed_type} onChange={e => setFormData({...formData, seed_type: e.target.value})}/>
-          </div>
-          <div className="two-col" style={{gap: '12px'}}>
-            <div className="form-group">
-              <label>Sowing Date</label>
-              <input type="date" className="form-control" value={formData.sowing_date} onChange={e => setFormData({...formData, sowing_date: e.target.value})}/>
+          <form onSubmit={handleSubmit}>
+            <div className="three-col">
+              <div className="form-group">
+                <label>Farmer</label>
+                <select className="form-control" value={form.farmer_id} onChange={f('farmer_id')} required>
+                  <option value="">— Select Farmer —</option>
+                  {farmers.map(fa => <option key={fa.user_id} value={fa.user_id}>{fa.name}</option>)}
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Seed Type</label>
+                <input className="form-control" value={form.seed_type} onChange={f('seed_type')} placeholder="e.g. Hybrid Paddy BR-28" required />
+              </div>
+              <div className="form-group">
+                <label>Used Quantity (kg)</label>
+                <input type="number" step="0.01" className="form-control" value={form.used_quantity} onChange={f('used_quantity')} />
+              </div>
             </div>
-            <div className="form-group">
-              <label>Expected Harvest Date</label>
-              <input type="date" className="form-control" value={formData.expected_harvest_date} onChange={e => setFormData({...formData, expected_harvest_date: e.target.value})}/>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="form-group">
+                <label>Sowing Date</label>
+                <input type="date" className="form-control" value={form.sowing_date} onChange={f('sowing_date')} required />
+              </div>
+              <div className="form-group">
+                <label>Expected Harvest Date</label>
+                <input type="date" className="form-control" value={form.expected_harvest_date} onChange={f('expected_harvest_date')} required />
+              </div>
             </div>
-          </div>
-          <div className="two-col" style={{gap: '12px'}}>
-            <div className="form-group">
-              <label>Seed Qty (kg)</label>
-              <input type="number" className="form-control" value={formData.seed_qty} onChange={e => setFormData({...formData, seed_qty: e.target.value})}/>
-            </div>
-            <div className="form-group">
-              <label>Seed Variety</label>
-              <input type="text" className="form-control" value={formData.variety} onChange={e => setFormData({...formData, variety: e.target.value})}/>
-            </div>
-          </div>
-          <div className="form-group">
-            <label>Fertiliser Applied</label>
-            <input type="text" className="form-control" value={formData.fertiliser} onChange={e => setFormData({...formData, fertiliser: e.target.value})}/>
-          </div>
-          <div className="two-col" style={{gap: '12px'}}>
-            <div className="form-group">
-              <label>Pesticides</label>
-              <input type="text" className="form-control" value={formData.pesticides} onChange={e => setFormData({...formData, pesticides: e.target.value})}/>
-            </div>
-            <div className="form-group">
-              <label>Usage Rates</label>
-              <input type="text" className="form-control" value={formData.usage_rates} onChange={e => setFormData({...formData, usage_rates: e.target.value})}/>
-            </div>
-          </div>
-          <div className="form-group">
-            <label>Notes</label>
-            <textarea className="form-control" rows="3" placeholder="Additional notes..." value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})}></textarea>
-          </div>
-          <button className="btn btn-primary" style={{width:'100%'}} onClick={handleSubmit}>💾 Save Sowing Record</button>
+            <button type="submit" className="btn btn-primary">{editingId ? '💾 Save Changes' : '✅ Create Log'}</button>
+          </form>
         </div>
-        <div className="card">
-          <div className="section-header"><h3>📋 Recent Sowing Records</h3></div>
-          <table>
-            <thead><tr><th>Plot</th><th>Crop</th><th>Date</th><th>Status</th></tr></thead>
-            <tbody>
-              {records.map(rec => (
-                <tr key={rec.id}>
-                  <td>{rec.plot.replace('Plot ', '').substring(0, 2)}</td>
-                  <td>{rec.crop_type}</td>
-                  <td>{new Date(rec.sowing_date).toLocaleDateString('en-GB', { month: 'short', day: 'numeric'})}</td>
-                  <td>
-                    <Badge 
-                      text={rec.status} 
-                      color={rec.status === 'Growing' ? 'green' : rec.status === 'Germinating' ? 'amber' : 'blue'} 
-                    />
-                  </td>
-                </tr>
-              ))}
-              {records.length === 0 && !loading && <tr><td colSpan="4" style={{textAlign:'center'}}>No records found</td></tr>}
-            </tbody>
-          </table>
+      )}
+
+      <div className="card">
+        <div className="section-header">
+          <h3>📋 All Sowing Logs</h3>
+          {!showForm && <button className="btn btn-primary" onClick={openCreate}>+ Add Log</button>}
         </div>
+        <table>
+          <thead><tr><th>#</th><th>Farmer</th><th>Seed Type</th><th>Qty (kg)</th><th>Sowing Date</th><th>Expected Harvest</th><th>Actions</th></tr></thead>
+          <tbody>
+            {loading && <tr><td colSpan="7" style={{ textAlign: 'center' }}>Loading…</td></tr>}
+            {!loading && records.length === 0 && <tr><td colSpan="7" style={{ textAlign: 'center' }}>No sowing logs found.</td></tr>}
+            {records.map(r => (
+              <tr key={r.sowing_id}>
+                <td><strong>#{r.sowing_id}</strong></td>
+                <td>{r.farmer_name}</td>
+                <td>{r.seed_type}</td>
+                <td>{r.used_quantity ?? '—'}</td>
+                <td>{r.sowing_date ? new Date(r.sowing_date).toLocaleDateString() : '—'}</td>
+                <td>{r.expected_harvest_date ? new Date(r.expected_harvest_date).toLocaleDateString() : '—'}</td>
+                <td>
+                  <button className="btn btn-outline btn-sm" style={{ marginRight: 6 }} onClick={() => openEdit(r)}>Edit</button>
+                  <button className="btn btn-amber btn-sm" onClick={() => handleDelete(r.sowing_id)}>Delete</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

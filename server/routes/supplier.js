@@ -3,50 +3,61 @@ import db from '../db.js';
 
 const router = express.Router();
 
-router.get('/orders', async (req, res) => {
+// ── Input Supply ──────────────────────────────────────────────
+
+router.get('/input-supply', async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM purchase_orders ORDER BY required_by ASC');
+    const [rows] = await db.query(
+      `SELECT is2.*, CONCAT(fu.first_name, ' ', fu.last_name) AS farmer_name,
+              CONCAT(su.first_name, ' ', su.last_name) AS supplier_name
+       FROM input_supply is2
+       JOIN users fu ON is2.farmer_id = fu.user_id
+       JOIN users su ON is2.supplier_id = su.user_id
+       ORDER BY is2.supply_date DESC`
+    );
     res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-router.post('/orders', async (req, res) => {
+router.post('/input-supply', async (req, res) => {
   try {
-    const { supplier, item, quantity, unit, required_by, delivery_address } = req.body;
-    const po_number = `PO-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
+    const { farmer_id, supplier_id, input_type, quantity, supply_date, cost, procurement_schedule, current_stock_level, usage_rate } = req.body;
+    if (!quantity || quantity <= 0) return res.status(400).json({ error: 'Quantity must be positive' });
     const [result] = await db.query(
-      'INSERT INTO purchase_orders (po_number, supplier, item, quantity, unit, required_by, delivery_address, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [po_number, supplier, item, quantity, unit, required_by, delivery_address, 'Pending']
+      'INSERT INTO input_supply (farmer_id, supplier_id, input_type, quantity, supply_date, cost, procurement_schedule, current_stock_level, usage_rate) VALUES (?,?,?,?,?,?,?,?,?)',
+      [farmer_id, supplier_id, input_type, quantity, supply_date, cost||null, procurement_schedule||null, current_stock_level||null, usage_rate||null]
     );
-    res.json({ id: result.insertId, po_number, ...req.body, status: 'Pending' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+    res.json({ supply_id: result.insertId, ...req.body });
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-router.get('/stock', async (req, res) => {
+router.put('/input-supply/:id', async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM stock_settings');
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.put('/stock/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { reorder_level, reorder_qty, auto_order_enabled, input_category, procurement_schedules } = req.body;
+    const { farmer_id, supplier_id, input_type, quantity, supply_date, cost, procurement_schedule, current_stock_level, usage_rate } = req.body;
     await db.query(
-      'UPDATE stock_settings SET reorder_level = ?, reorder_qty = ?, auto_order_enabled = ?, input_category = ?, procurement_schedules = ? WHERE id = ?',
-      [reorder_level, reorder_qty, auto_order_enabled, input_category, procurement_schedules, id]
+      'UPDATE input_supply SET farmer_id=?, supplier_id=?, input_type=?, quantity=?, supply_date=?, cost=?, procurement_schedule=?, current_stock_level=?, usage_rate=? WHERE supply_id=?',
+      [farmer_id, supplier_id, input_type, quantity, supply_date, cost||null, procurement_schedule||null, current_stock_level||null, usage_rate||null, req.params.id]
     );
-    res.json({ message: 'Settings updated' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+    res.json({ message: 'Input supply record updated' });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.delete('/input-supply/:id', async (req, res) => {
+  try {
+    await db.query('DELETE FROM input_supply WHERE supply_id=?', [req.params.id]);
+    res.json({ message: 'Input supply record deleted' });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Lookup helpers ────────────────────────────────────────────
+
+router.get('/suppliers-list', async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      "SELECT u.user_id, CONCAT(u.first_name, ' ', u.last_name) AS name, s.company_name FROM users u JOIN suppliers s ON u.user_id = s.user_id"
+    );
+    res.json(rows);
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 export default router;
