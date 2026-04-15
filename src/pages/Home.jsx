@@ -162,7 +162,7 @@ const Home = () => {
           {[
             { img: 'https://images.unsplash.com/photo-1560493676-04071c5f467b?w=600&q=80', title: 'Farm to Facility', desc: 'Securely log sowing, harvests, and agricultural inputs with absolute precision.' },
             { img: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?w=600&q=80', title: 'Transparent Logistics', desc: 'Real-time inventory tracking, warehouse management, and seamless fleet routing.' },
-            { img: '/predictive.png', title: 'Predictive Analytics', desc: 'Utilize ML-driven forecasts for crop rot rates, logistics costs, and market demand.' }
+            { img: 'public/predictive.png', title: 'Predictive Analytics', desc: 'Utilize ML-driven forecasts for crop rot rates, logistics costs, and market demand.' }
           ].map((item, i) => (
             <div key={i} style={{ flex: '1 1 300px', maxWidth: 380, background: 'var(--cream)', borderRadius: 'var(--radius)', overflow: 'hidden', boxShadow: 'var(--shadow)', transition: 'transform 0.3s' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-5px)'} onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
               <img src={item.img} alt={item.title} style={{ width: '100%', height: 200, objectFit: 'cover' }} />
