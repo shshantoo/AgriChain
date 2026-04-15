@@ -4,7 +4,7 @@ import { RoleContext } from '../context/RoleContext';
 import axios from 'axios';
 
 const Layout = ({ children }) => {
-  const { currentRole, user, logout, updateUser } = useContext(RoleContext);
+  const { currentRole, user, logout, updateUser, token } = useContext(RoleContext);
   const location = useLocation();
   const navigate = useNavigate();
   const menuRef = useRef(null);
@@ -39,7 +39,9 @@ const Layout = ({ children }) => {
     e.preventDefault();
     setSaving(true); setSaveMsg('');
     try {
-      await axios.put('http://localhost:3001/api/auth/profile', form);
+      await axios.put('http://localhost:3001/api/auth/profile', form, {
+        headers: { Authorization: `Bearer ${token || localStorage.getItem('token')}` }
+      });
       updateUser({ first_name: form.first_name, last_name: form.last_name, email: form.email });
       setSaveMsg('✅ Profile updated successfully!');
       setTimeout(() => setShowEditModal(false), 1200);
@@ -121,8 +123,8 @@ const Layout = ({ children }) => {
                 id="profile-avatar-btn"
                 onClick={() => setShowMenu(p => !p)}
                 style={{
-                  width: 40, height: 40, borderRadius: '50%', border: '2px solid var(--primary)',
-                  background: 'var(--surface)', cursor: 'pointer', fontSize: '1.2rem',
+                  width: 40, height: 40, borderRadius: '50%', border: '2px solid var(--green-mid)',
+                  background: 'var(--white)', cursor: 'pointer', fontSize: '1.2rem',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   transition: 'transform 0.15s', transform: showMenu ? 'scale(1.1)' : 'scale(1)'
                 }}
@@ -134,37 +136,25 @@ const Layout = ({ children }) => {
               {showMenu && (
                 <div style={{
                   position: 'absolute', top: '48px', right: 0, minWidth: 220, zIndex: 1000,
-                  background: 'var(--surface)', border: '1px solid var(--border)',
+                  background: 'var(--white)', border: '1px solid var(--border)',
                   borderRadius: 12, boxShadow: '0 8px 24px rgba(0,0,0,0.4)', overflow: 'hidden'
                 }}>
-                  <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', background: 'var(--bg)' }}>
+                  <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', background: '#f9fafb' }}>
                     <div style={{ fontWeight: 700, marginBottom: 2 }}>{user?.first_name} {user?.last_name}</div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{user?.email}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--primary)', marginTop: 4 }}>{currentRole.name}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--green-mid)', marginTop: 4 }}>{currentRole.name}</div>
                   </div>
                   <button
                     onClick={() => { setShowMenu(false); setShowEditModal(true); }}
                     style={{
                       width: '100%', padding: '12px 16px', textAlign: 'left', background: 'none',
-                      border: 'none', cursor: 'pointer', color: 'var(--text)', fontSize: '0.9rem',
+                      border: 'none', cursor: 'pointer', color: 'var(--text-dark)', fontSize: '0.9rem',
                       display: 'flex', alignItems: 'center', gap: 10, transition: 'background 0.1s'
                     }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'var(--bg)'}
+                    onMouseEnter={e => e.currentTarget.style.background = '#f9fafb'}
                     onMouseLeave={e => e.currentTarget.style.background = 'none'}
                   >
                     ✏️ <span>Edit Profile</span>
-                  </button>
-                  <button
-                    onClick={() => { logout(); navigate('/login'); }}
-                    style={{
-                      width: '100%', padding: '12px 16px', textAlign: 'left', background: 'none',
-                      border: 'none', borderTop: '1px solid var(--border)', cursor: 'pointer',
-                      color: '#f87171', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: 10
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(248,113,113,0.1)'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                  >
-                    🚪 <span>Logout</span>
                   </button>
                 </div>
               )}
@@ -180,7 +170,7 @@ const Layout = ({ children }) => {
             padding: '0 16px'
           }} onClick={() => setShowEditModal(false)}>
             <div style={{
-              background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16,
+              background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 16,
               padding: 28, minWidth: 320, maxWidth: 480, width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
             }} onClick={e => e.stopPropagation()}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>

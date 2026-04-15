@@ -22,10 +22,32 @@ const Login = () => {
   };
 
   return (
-    <div id="role-screen">
-      <div className="logo">Agri<span>Chain</span></div>
+    <div id="role-screen" style={{ paddingTop: '100px' }}>
+      <nav style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '20px 50px',
+        background: 'var(--white)',
+        borderBottom: '1px solid var(--border)',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1000
+      }}>
+        <Link to="/" className="logo" style={{ textDecoration: 'none', margin: 0, fontSize: '1.5rem', fontWeight: 700, color: 'var(--text)' }}>
+          Agri<span style={{ color: 'var(--primary)' }}>Chain</span>
+        </Link>
+        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+          <a href="/#about-us" className="btn btn-outline" style={{ textDecoration: 'none' }}>About Us</a>
+          <Link to="/login" className="btn btn-outline" style={{ textDecoration: 'none' }}>Login</Link>
+          <Link to="/register" className="btn btn-primary" style={{ textDecoration: 'none' }}>Sign Up</Link>
+        </div>
+      </nav>
+      <div className="logo" style={{ marginTop: '20px' }}>Agri<span>Chain</span></div>
       <div className="tagline">Smart Farm-to-Warehouse Management System</div>
-      <div style={{ maxWidth: '400px', margin: '40px auto', background: 'var(--surface)', padding: '30px', borderRadius: '16px', border: '1px solid var(--border)' }}>
+      <div style={{ maxWidth: '400px', margin: '30px auto', background: 'var(--surface)', padding: '30px', borderRadius: '16px', border: '1px solid var(--border)' }}>
         <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Login System</h2>
         {error && <div className="alert alert-danger" style={{ marginBottom: '15px' }}>{error}</div>}
         <form onSubmit={handleLogin}>

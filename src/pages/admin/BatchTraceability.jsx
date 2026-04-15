@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Badge } from '../../components/SharedUI';
 
@@ -17,18 +17,38 @@ const BatchTraceability = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSearch = async e => {
-    e.preventDefault();
+  const [batches, setBatches] = useState([]);
+  const [filter, setFilter] = useState('');
+
+  useEffect(() => {
+    axios.get('http://localhost:3001/api/admin/batches-list')
+      .then(res => setBatches(res.data))
+      .catch(console.error);
+  }, []);
+
+  const fetchTrace = async (id) => {
     setError(''); setTrace(null);
-    if (!batchId) return;
+    if (!id) return;
     setLoading(true);
+    setBatchId(id); // Keep input synced
     try {
-      const r = await axios.get(TRACE_URL(batchId));
+      const r = await axios.get(TRACE_URL(id));
       setTrace(r.data);
     } catch (err) {
       setError(err.response?.data?.error || 'Batch not found');
     } finally { setLoading(false); }
   };
+
+  const handleSearch = e => {
+    e.preventDefault();
+    fetchTrace(batchId);
+  };
+
+  const filteredBatches = batches.filter(b => 
+    b.product_name.toLowerCase().includes(filter.toLowerCase()) ||
+    b.farmer_name.toLowerCase().includes(filter.toLowerCase()) ||
+    String(b.batch_id).includes(filter)
+  );
 
   return (
     <div className="page-body active">
@@ -38,7 +58,7 @@ const BatchTraceability = () => {
       </div>
 
       <div className="card">
-        <form onSubmit={handleSearch} style={{ display: 'flex', gap: 12, alignItems: 'flex-end' }}>
+        <form onSubmit={handleSearch} style={{ display: 'flex', gap: 12, alignItems: 'flex-end', marginBottom: 24 }}>
           <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
             <label>Harvest Batch ID</label>
             <input className="form-control" type="number" value={batchId} onChange={e => setBatchId(e.target.value)} placeholder="e.g. 1" required />
@@ -47,6 +67,61 @@ const BatchTraceability = () => {
             {loading ? '⏳ Searching…' : '🔍 Trace Batch'}
           </button>
         </form>
+
+        <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '16px 0' }} />
+        
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>📋 Available Harvest Batches</h3>
+          <input 
+            type="text" 
+            className="form-control" 
+            style={{ width: '250px' }}
+            placeholder="Search by ID, Product, or Farmer..." 
+            value={filter} 
+            onChange={e => setFilter(e.target.value)} 
+          />
+        </div>
+        
+        <div style={{ maxHeight: 280, overflowY: 'auto', border: '1px solid var(--border)', borderRadius: 8 }}>
+          <table>
+            <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
+              <tr>
+                <th>Batch #</th>
+                <th>Product</th>
+                <th>Farmer</th>
+                <th>Harvest Date</th>
+                <th>Qty (t)</th>
+                <th>Grade</th>
+                <th style={{ textAlign: 'center' }}>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredBatches.map(b => (
+                <tr key={b.batch_id}>
+                  <td><strong>#{b.batch_id}</strong></td>
+                  <td>{b.product_name}</td>
+                  <td>{b.farmer_name}</td>
+                  <td>{new Date(b.harvest_date).toLocaleDateString()}</td>
+                  <td>{b.quantity}</td>
+                  <td><Badge text={b.quality_grade || '—'} color={b.quality_grade === 'A' ? 'green' : 'amber'} /></td>
+                  <td style={{ textAlign: 'center' }}>
+                    <button 
+                      type="button"
+                      className="btn btn-sm btn-outline" 
+                      onClick={() => fetchTrace(b.batch_id)}
+                      disabled={loading}
+                    >
+                      Trace
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {filteredBatches.length === 0 && (
+                <tr><td colSpan="7" style={{ textAlign: 'center', padding: 24, color: 'var(--text-muted)' }}>No batches found matching your search.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {error && <div className="alert alert-danger" style={{ marginTop: 16 }}>⚠️ {error}</div>}

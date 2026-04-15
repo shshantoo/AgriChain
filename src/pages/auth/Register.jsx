@@ -3,36 +3,50 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
 const ROLES = [
-  { value: 'F', label: '👨‍🌾 Farmer', extra: [
-    { name: 'farm_village', label: 'Farm Village', type: 'text' },
-    { name: 'farm_district', label: 'Farm District', type: 'text' },
-    { name: 'farm_size', label: 'Farm Size (ha)', type: 'number' },
-    { name: 'crop_type', label: 'Main Crop Type', type: 'text' },
-  ]},
-  { value: 'S', label: '🚚 Supplier', extra: [
-    { name: 'company_name', label: 'Company Name', type: 'text' },
-    { name: 'supply_crops_type', label: 'Supply Crops Type', type: 'text' },
-  ]},
-  { value: 'WM', label: '🏭 Warehouse Manager', extra: [
-    { name: 'warehouse_district', label: 'Warehouse District', type: 'text' },
-    { name: 'warehouse_area', label: 'Warehouse Area', type: 'text' },
-  ]},
-  { value: 'PM', label: '⚙️ Processing Manager', extra: [
-    { name: 'experience_years', label: 'Experience (years)', type: 'number' },
-    { name: 'specialization', label: 'Specialization', type: 'text' },
-  ]},
-  { value: 'QI', label: '🔬 Quality Inspector', extra: [
-    { name: 'lab_id', label: 'Lab ID', type: 'text' },
-    { name: 'specialty_research_field', label: 'Specialty / Research Field', type: 'text' },
-  ]},
+  {
+    value: 'F', label: '👨‍🌾 Farmer', extra: [
+      { name: 'farm_village', label: 'Farm Village', type: 'text' },
+      { name: 'farm_district', label: 'Farm District', type: 'text' },
+      { name: 'farm_size', label: 'Farm Size (ha)', type: 'number' },
+      { name: 'crop_type', label: 'Main Crop Type', type: 'text' },
+    ]
+  },
+  {
+    value: 'S', label: '🚚 Supplier', extra: [
+      { name: 'company_name', label: 'Company Name', type: 'text' },
+      { name: 'supply_crops_type', label: 'Supply Crops Type', type: 'text' },
+    ]
+  },
+  {
+    value: 'WM', label: '🏭 Warehouse Manager', extra: [
+      { name: 'warehouse_district', label: 'Warehouse District', type: 'text' },
+      { name: 'warehouse_area', label: 'Warehouse Area', type: 'text' },
+    ]
+  },
+  {
+    value: 'PM', label: '⚙️ Processing Manager', extra: [
+      { name: 'experience_years', label: 'Experience (years)', type: 'number' },
+      { name: 'specialization', label: 'Specialization', type: 'text' },
+    ]
+  },
+  {
+    value: 'QI', label: '🔬 Quality Inspector', extra: [
+      { name: 'lab_id', label: 'Lab ID', type: 'text' },
+      { name: 'specialty_research_field', label: 'Specialty / Research Field', type: 'text' },
+    ]
+  },
   { value: 'A', label: '🛡️ Admin', extra: [] },
-  { value: 'MO', label: '🏪 Market Operator', extra: [
-    { name: 'market_city', label: 'Market City', type: 'text' },
-    { name: 'market_zone', label: 'Market Zone', type: 'text' },
-  ]},
-  { value: 'LM', label: '🚛 Logistics Manager', extra: [
-    { name: 'transport_unit', label: 'Transport Unit / Fleet', type: 'text' },
-  ]},
+  {
+    value: 'MO', label: '🏪 Market Operator', extra: [
+      { name: 'market_city', label: 'Market City', type: 'text' },
+      { name: 'market_zone', label: 'Market Zone', type: 'text' },
+    ]
+  },
+  {
+    value: 'LM', label: '🚛 Logistics Manager', extra: [
+      { name: 'transport_unit', label: 'Transport Unit / Fleet', type: 'text' },
+    ]
+  },
 ];
 
 const Register = () => {
@@ -65,8 +79,30 @@ const Register = () => {
   };
 
   return (
-    <div id="role-screen">
-      <div className="logo">Agri<span>Chain</span></div>
+    <div id="role-screen" style={{ paddingTop: '100px' }}>
+      <nav style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '20px 50px',
+        background: 'var(--white)',
+        borderBottom: '1px solid var(--border)',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1000
+      }}>
+        <Link to="/" className="logo" style={{ textDecoration: 'none', margin: 0, fontSize: '1.5rem', fontWeight: 700, color: 'var(--text)' }}>
+          Agri<span style={{ color: 'var(--primary)' }}>Chain</span>
+        </Link>
+        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+          <a href="/#about-us" className="btn btn-outline" style={{ textDecoration: 'none' }}>About Us</a>
+          <Link to="/login" className="btn btn-outline" style={{ textDecoration: 'none' }}>Login</Link>
+          <Link to="/register" className="btn btn-primary" style={{ textDecoration: 'none' }}>Sign Up</Link>
+        </div>
+      </nav>
+      <div className="logo" style={{ marginTop: '20px' }}>Agri<span>Chain</span></div>
       <div className="tagline">Smart Farm-to-Warehouse Management System</div>
       <div style={{ maxWidth: '520px', margin: '30px auto', background: 'var(--surface)', padding: '30px', borderRadius: '16px', border: '1px solid var(--border)' }}>
         <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Create Account</h2>

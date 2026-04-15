@@ -14,6 +14,7 @@ const UserManagement = () => {
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyUser);
   const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState('');
 
   const load = async () => { setLoading(true); try { const r = await axios.get(`${BASE}/users`); setUsers(r.data); } catch { setUsers([]); } finally { setLoading(false); } };
   useEffect(() => { load(); }, []);
@@ -36,7 +37,8 @@ const UserManagement = () => {
   const fi = k => e => setForm({ ...form, [k]: e.target.value });
 
   const filtered = users.filter(u =>
-    `${u.first_name} ${u.last_name} ${u.email}`.toLowerCase().includes(search.toLowerCase())
+    `${u.first_name} ${u.last_name} ${u.email}`.toLowerCase().includes(search.toLowerCase()) &&
+    (roleFilter === '' || u.role_type === roleFilter)
   );
 
   const roleColor = r => ({ F: 'green', S: 'amber', WM: 'blue', PM: 'blue', QI: 'blue', A: 'red', MO: 'green', LM: 'amber' }[r] || 'blue');
@@ -82,6 +84,10 @@ const UserManagement = () => {
         <div className="section-header">
           <h3>📋 All Users ({users.length})</h3>
           <div style={{ display: 'flex', gap: 10 }}>
+            <select className="form-control" value={roleFilter} onChange={e => setRoleFilter(e.target.value)} style={{ width: 180 }}>
+              <option value="">All Groups</option>
+              {Object.entries(ROLE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+            </select>
             <input className="form-control" placeholder="Search name or email…" value={search} onChange={e => setSearch(e.target.value)} style={{ width: 220 }} />
             {!showForm && <button className="btn btn-primary" onClick={() => { setForm(emptyUser); setEditingId(null); setShowForm(true); }}>+ Add User</button>}
           </div>

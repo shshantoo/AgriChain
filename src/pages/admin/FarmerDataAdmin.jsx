@@ -12,6 +12,7 @@ const ChartCard = ({ title, children }) => (
 
 const emptyH = { farmer_id:'', product_id:'', harvest_date:'', quantity:'', quality_grade:'Grade A' };
 const emptyS = { farmer_id:'', sowing_date:'', expected_harvest_date:'', seed_type:'', used_quantity:'' };
+const emptyP = { product_name:'', category:'', storage_requirement:'', shelf_life:'', packaging_details:'' };
 
 const BASE = 'http://localhost:3001/api/farmer';
 
@@ -40,22 +41,23 @@ const FarmerDataAdmin = () => {
   };
   useEffect(() => { load(); }, []);
 
-  const openAdd = (type) => { setFormType(type); setForm(type==='harvest' ? {...emptyH} : {...emptyS}); setEditingId(null); setShowForm(true); setTab(type); };
+  const openAdd = (type) => { setFormType(type); setForm(type==='harvest' ? {...emptyH} : type==='sowing' ? {...emptyS} : {...emptyP}); setEditingId(null); setShowForm(true); setTab(type); };
   const openEdit = (type, row) => {
     setFormType(type); setShowForm(true); setTab(type);
     if (type === 'harvest') { setEditingId(row.batch_id); setForm({ farmer_id: row.farmer_id, product_id: row.product_id, harvest_date: row.harvest_date?.split('T')[0]||'', quantity: row.quantity, quality_grade: row.quality_grade }); }
-    else { setEditingId(row.sowing_id); setForm({ farmer_id: row.farmer_id, sowing_date: row.sowing_date?.split('T')[0]||'', expected_harvest_date: row.expected_harvest_date?.split('T')[0]||'', seed_type: row.seed_type, used_quantity: row.used_quantity }); }
+    else if (type === 'sowing') { setEditingId(row.sowing_id); setForm({ farmer_id: row.farmer_id, sowing_date: row.sowing_date?.split('T')[0]||'', expected_harvest_date: row.expected_harvest_date?.split('T')[0]||'', seed_type: row.seed_type, used_quantity: row.used_quantity }); }
+    else { setEditingId(row.product_id); setForm({ product_name: row.product_name, category: row.category||'', storage_requirement: row.storage_requirement||'', shelf_life: row.shelf_life||'', packaging_details: row.packaging_details||'' }); }
   };
   const closeForm = () => { setShowForm(false); setEditingId(null); };
   const handleSubmit = async e => {
     e.preventDefault();
-    const url = formType === 'harvest' ? `${BASE}/harvest` : `${BASE}/sowing`;
+    const url = formType === 'harvest' ? `${BASE}/harvest` : formType === 'sowing' ? `${BASE}/sowing` : 'http://localhost:3001/api/product';
     try { if (editingId) await axios.put(`${url}/${editingId}`, form); else await axios.post(url, form); closeForm(); load(); }
     catch (err) { alert(err.response?.data?.error || 'Save failed'); }
   };
   const handleDelete = async (type, id) => {
     if (!window.confirm('Delete this record?')) return;
-    const url = type === 'harvest' ? `${BASE}/harvest/${id}` : `${BASE}/sowing/${id}`;
+    const url = type === 'harvest' ? `${BASE}/harvest/${id}` : type === 'sowing' ? `${BASE}/sowing/${id}` : `http://localhost:3001/api/product/${id}`;
     try { await axios.delete(url); load(); } catch { alert('Delete failed — record may have dependent data'); }
   };
   const fi = k => e => setForm({ ...form, [k]: e.target.value });
@@ -68,6 +70,7 @@ const FarmerDataAdmin = () => {
   const q = search.toLowerCase();
   const filteredH = harvests.filter(h=>`${h.farmer_name} ${h.product_name} ${h.quality_grade}`.toLowerCase().includes(q));
   const filteredS = sowings.filter(s=>`${s.farmer_name} ${s.seed_type}`.toLowerCase().includes(q));
+  const filteredP = products.filter(p=>`${p.product_name} ${p.category}`.toLowerCase().includes(q));
   const gradeColor = g => g==='Grade A'?'green':g==='Grade B'?'amber':'red';
 
   return (
@@ -109,7 +112,7 @@ const FarmerDataAdmin = () => {
       {showForm && (
         <div className="card" style={{ marginBottom:16, border:'2px solid var(--primary)' }}>
           <div className="section-header">
-            <h3>{editingId?'✏️ Edit':'➕ Add'} {formType==='harvest'?'Harvest Batch':'Sowing Log'}</h3>
+            <h3>{editingId?'✏️ Edit':'➕ Add'} {formType==='harvest'?'Harvest Batch':formType==='sowing'?'Sowing Log':'Product'}</h3>
             <button className="btn btn-outline btn-sm" onClick={closeForm}>✕ Cancel</button>
           </div>
           <form onSubmit={handleSubmit}>
@@ -143,7 +146,7 @@ const FarmerDataAdmin = () => {
                   </div>
                 </div>
               </>
-            ) : (
+            ) : formType === 'sowing' ? (
               <>
                 <div className="three-col">
                   <div className="form-group"><label>Farmer</label>
@@ -168,6 +171,28 @@ const FarmerDataAdmin = () => {
                   </div>
                 </div>
               </>
+            ) : (
+              <>
+                <div className="three-col">
+                  <div className="form-group"><label>Product Name</label>
+                    <input className="form-control" value={form.product_name} onChange={fi('product_name')} required />
+                  </div>
+                  <div className="form-group"><label>Category</label>
+                    <input className="form-control" value={form.category} onChange={fi('category')} />
+                  </div>
+                  <div className="form-group"><label>Shelf Life (days)</label>
+                    <input type="number" className="form-control" value={form.shelf_life} onChange={fi('shelf_life')} />
+                  </div>
+                </div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+                  <div className="form-group"><label>Storage Requirement</label>
+                    <input className="form-control" value={form.storage_requirement} onChange={fi('storage_requirement')} />
+                  </div>
+                  <div className="form-group"><label>Packaging Details</label>
+                    <input className="form-control" value={form.packaging_details} onChange={fi('packaging_details')} />
+                  </div>
+                </div>
+              </>
             )}
             <button type="submit" className="btn btn-primary">{editingId?'💾 Save Changes':'✅ Create Record'}</button>
           </form>
@@ -176,7 +201,7 @@ const FarmerDataAdmin = () => {
 
       {/* Tabs + Search */}
       <div style={{ display:'flex', gap:10, alignItems:'center', marginBottom:14, flexWrap:'wrap' }}>
-        {[['harvest','🌾 Harvest Batches',filteredH.length],['sowing','🌱 Sowing Logs',filteredS.length]].map(([t,l,cnt])=>(
+        {[['harvest','🌾 Harvest Batches',filteredH.length],['sowing','🌱 Sowing Logs',filteredS.length],['product','🍎 Products',filteredP.length]].map(([t,l,cnt])=>(
           <button key={t} className={`btn btn-sm ${tab===t?'btn-primary':'btn-outline'}`} onClick={()=>setTab(t)}>{l} ({cnt})</button>
         ))}
         <div style={{ marginLeft:'auto', display:'flex', gap:8 }}>
@@ -227,6 +252,30 @@ const FarmerDataAdmin = () => {
                   <td>
                     <button className="btn btn-outline btn-sm" style={{ marginRight:6 }} onClick={()=>openEdit('sowing',s)}>✏️ Edit</button>
                     <button className="btn btn-amber btn-sm" onClick={()=>handleDelete('sowing',s.sowing_id)}>🗑️</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {tab === 'product' && (
+        <div className="card">
+          <div className="section-header"><h3>🍎 Products ({filteredP.length})</h3>
+            <button className="btn btn-primary btn-sm" onClick={()=>openAdd('product')}>+ Add Product</button>
+          </div>
+          <table><thead><tr><th>#</th><th>Product Name</th><th>Category</th><th>Shelf Life</th><th>Storage Req.</th><th>Actions</th></tr></thead>
+            <tbody>
+              {loading && <tr><td colSpan="6" style={{ textAlign:'center' }}>Loading…</td></tr>}
+              {!loading && filteredP.length===0 && <tr><td colSpan="6" style={{ textAlign:'center' }}>No results.</td></tr>}
+              {filteredP.map(p=>(
+                <tr key={p.product_id}>
+                  <td><strong>#{p.product_id}</strong></td><td>{p.product_name}</td><td>{p.category||'—'}</td>
+                  <td>{p.shelf_life ? `${p.shelf_life} days` : '—'}</td>
+                  <td>{p.storage_requirement||'—'}</td>
+                  <td>
+                    <button className="btn btn-outline btn-sm" style={{ marginRight:6 }} onClick={()=>openEdit('product',p)}>✏️ Edit</button>
+                    <button className="btn btn-amber btn-sm" onClick={()=>handleDelete('product',p.product_id)}>🗑️</button>
                   </td>
                 </tr>
               ))}
