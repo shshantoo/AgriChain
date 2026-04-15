@@ -14,6 +14,8 @@ const Layout = ({ children }) => {
   const [form, setForm] = useState({ first_name: '', last_name: '', email: '' });
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState('');
+  // Sidebar open state for mobile/tablet
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Pre-fill form when modal opens
   useEffect(() => {
@@ -23,12 +25,15 @@ const Layout = ({ children }) => {
     }
   }, [showEditModal, user]);
 
-  // Close menu on outside click
+  // Close dropdown on outside click
   useEffect(() => {
     const handleClick = e => { if (menuRef.current && !menuRef.current.contains(e.target)) setShowMenu(false); };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
+
+  // Close sidebar when route changes (mobile)
+  useEffect(() => { setSidebarOpen(false); }, [location.pathname]);
 
   const handleSaveProfile = async e => {
     e.preventDefault();
@@ -50,8 +55,24 @@ const Layout = ({ children }) => {
 
   return (
     <div id="app" className="active">
-      {/* SIDEBAR */}
-      <aside className="sidebar" id="sidebar">
+
+      {/* ── MOBILE OVERLAY ── */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          className="sidebar-overlay"
+        />
+      )}
+
+      {/* ── SIDEBAR ── */}
+      <aside className={`sidebar${sidebarOpen ? ' sidebar--open' : ''}`} id="sidebar">
+        {/* Close button (mobile only) */}
+        <button
+          className="sidebar-close-btn"
+          onClick={() => setSidebarOpen(false)}
+          aria-label="Close sidebar"
+        >✕</button>
+
         <div className="sidebar-logo">Agri<span>Chain</span></div>
         <div className="sidebar-role-badge">
           <strong id="sidebar-role-name">{currentRole.name}</strong>
@@ -76,10 +97,20 @@ const Layout = ({ children }) => {
         </div>
       </aside>
 
-      {/* MAIN CONTENT */}
+      {/* ── MAIN CONTENT ── */}
       <div className="main-content">
         <div className="topbar">
+          {/* Hamburger – visible on small/medium screens */}
+          <button
+            className="hamburger-btn"
+            onClick={() => setSidebarOpen(o => !o)}
+            aria-label="Toggle sidebar"
+          >
+            <span /><span /><span />
+          </button>
+
           <div className="topbar-title">{pageTitle}</div>
+
           <div className="topbar-right">
             <div className="topbar-pill">● {currentRole.pill}</div>
             <div className="notif-btn">🔔<div className="notif-dot"></div></div>
@@ -106,13 +137,11 @@ const Layout = ({ children }) => {
                   background: 'var(--surface)', border: '1px solid var(--border)',
                   borderRadius: 12, boxShadow: '0 8px 24px rgba(0,0,0,0.4)', overflow: 'hidden'
                 }}>
-                  {/* User info header */}
                   <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', background: 'var(--bg)' }}>
                     <div style={{ fontWeight: 700, marginBottom: 2 }}>{user?.first_name} {user?.last_name}</div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{user?.email}</div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--primary)', marginTop: 4 }}>{currentRole.name}</div>
                   </div>
-                  {/* Actions */}
                   <button
                     onClick={() => { setShowMenu(false); setShowEditModal(true); }}
                     style={{
@@ -120,8 +149,8 @@ const Layout = ({ children }) => {
                       border: 'none', cursor: 'pointer', color: 'var(--text)', fontSize: '0.9rem',
                       display: 'flex', alignItems: 'center', gap: 10, transition: 'background 0.1s'
                     }}
-                    onMouseEnter={e => e.target.style.background = 'var(--bg)'}
-                    onMouseLeave={e => e.target.style.background = 'none'}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--bg)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'none'}
                   >
                     ✏️ <span>Edit Profile</span>
                   </button>
@@ -147,11 +176,12 @@ const Layout = ({ children }) => {
         {showEditModal && (
           <div style={{
             position: 'fixed', inset: 0, zIndex: 2000,
-            background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center'
+            background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '0 16px'
           }} onClick={() => setShowEditModal(false)}>
             <div style={{
               background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16,
-              padding: 28, minWidth: 380, maxWidth: 480, width: '90%', boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
+              padding: 28, minWidth: 320, maxWidth: 480, width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
             }} onClick={e => e.stopPropagation()}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                 <h3 style={{ margin: 0 }}>✏️ Edit Profile</h3>
