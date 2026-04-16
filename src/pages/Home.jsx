@@ -191,11 +191,11 @@ const Home = () => {
 
         <div style={{ display: 'flex', gap: 15, justifyContent: 'center', flexWrap: 'wrap', maxWidth: 1000, margin: '0 auto' }}>
           {[
-            { name: "Mohammed Rabbi Shanto", role: "Lead Systems Architect", email: "2222818@iub.edu.bd", image: "https://lh3.googleusercontent.com/a-/ALV-UjW-APoiyL3IjC2I5_A6PVJIiiUSU7Zri13LetX9NX0lbR-Bd_4=s544-p-k-rw-no" },
-            { name: "Member 2", role: "Frontend UI/UX Eng", email: "[EMAIL_ADDRESS]" },
-            { name: "Member 3", role: "Backend Database Dev", email: "[EMAIL_ADDRESS]" },
-            { name: "Member 4", role: "AI & Predictve Models", email: "[EMAIL_ADDRESS]" },
-            { name: "Member 5", role: "AgOps & Logistics", email: "[EMAIL_ADDRESS]" }
+            { name: "Shanto", role: "Frontend Developer", email: "2222818@iub.edu.bd", image: "https://lh3.googleusercontent.com/a-/ALV-UjW-APoiyL3IjC2I5_A6PVJIiiUSU7Zri13LetX9NX0lbR-Bd_4=s544-p-k-rw-no" },
+            { name: "Abdullah", role: "Frontend UI/UX Engineer", email: "2210719@iub.edu.bd", image: "https://lh3.googleusercontent.com/a-/ALV-UjWVG0i1ERapX0hUgxhdaz5KAIMLtc5iKn8bc-vpq3GBgNAt_gLf=s48-p-k-rw-no" },
+            { name: "Muhtasin", role: "Backend Database Developer", email: "2211162@iub.edu.bd" },
+            { name: "Rownuk", role: "AI & Predictive Models", email: " 2221354@iub.edu.bd" },
+            { name: "Torikul", role: "AgOps & Logistics", email: "2222423@iub.edu.bd" }
           ].map((team, i) => (
             <div key={i} style={{ flex: '1 1 180px', background: 'var(--white)', padding: 16, borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.05)', border: '1px solid var(--border)' }}>
               {team.image ? (
